@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useUser } from './useUser';
 
 export interface TableStats {
   attempts: number;
@@ -7,52 +8,70 @@ export interface TableStats {
 }
 
 export const useMastery = () => {
-  const [stats, setStats] = useState<Record<number, TableStats>>({});
+  const { currentUser } = useUser();
+  const [stats, setStats] = useState<Record<string, TableStats>>({});
+
+  const getStorageKey = () => `math_mutiny_mastery_${currentUser}`;
 
   useEffect(() => {
-    const saved = localStorage.getItem('math_mutiny_mastery');
+    if (!currentUser) return;
+    const saved = localStorage.getItem(getStorageKey());
     if (saved) {
       try {
         setStats(JSON.parse(saved));
       } catch (e) {
         console.error("Failed to parse mastery stats", e);
       }
+    } else {
+      setStats({});
     }
-  }, []);
+  }, [currentUser]);
 
-  const recordAnswer = (table: number, isCorrect: boolean) => {
+  const recordAnswer = (table: number, questionId: string, isCorrect: boolean) => {
+    if (!currentUser) return;
     setStats(prev => {
-      const current = prev[table] || { attempts: 0, correct: 0, completions: 0 };
+      const tKey = `table_${table}`;
+      const qKey = `q_${questionId}`;
+      const currentTable = prev[tKey] || { attempts: 0, correct: 0, completions: 0 };
+      const currentQuestion = prev[qKey] || { attempts: 0, correct: 0, completions: 0 };
+      
       const newStats = {
         ...prev,
-        [table]: {
-          ...current,
-          attempts: current.attempts + 1,
-          correct: current.correct + (isCorrect ? 1 : 0),
+        [tKey]: {
+          ...currentTable,
+          attempts: currentTable.attempts + 1,
+          correct: currentTable.correct + (isCorrect ? 1 : 0),
+        },
+        [qKey]: {
+          ...currentQuestion,
+          attempts: currentQuestion.attempts + 1,
+          correct: currentQuestion.correct + (isCorrect ? 1 : 0),
         }
       };
-      localStorage.setItem('math_mutiny_mastery', JSON.stringify(newStats));
+      localStorage.setItem(getStorageKey(), JSON.stringify(newStats));
       return newStats;
     });
   };
 
   const recordCompletion = (table: number) => {
+    if (!currentUser) return;
     setStats(prev => {
-      const current = prev[table] || { attempts: 0, correct: 0, completions: 0 };
+      const tKey = `table_${table}`;
+      const currentTable = prev[tKey] || { attempts: 0, correct: 0, completions: 0 };
       const newStats = {
         ...prev,
-        [table]: {
-          ...current,
-          completions: current.completions + 1,
+        [tKey]: {
+          ...currentTable,
+          completions: currentTable.completions + 1,
         }
       };
-      localStorage.setItem('math_mutiny_mastery', JSON.stringify(newStats));
+      localStorage.setItem(getStorageKey(), JSON.stringify(newStats));
       return newStats;
     });
   };
 
   const getMastery = (table: number) => {
-    const s = stats[table];
+    const s = stats[`table_${table}`];
     if (!s || s.attempts === 0) return 0;
     
     // Accuracy (0 to 1)
@@ -71,11 +90,23 @@ export const useMastery = () => {
     
     return Math.max(0, Math.min(score, 1));
   };
-
-  const resetMastery = () => {
-    setStats({});
-    localStorage.removeItem('math_mutiny_mastery');
+  
+  const getQuestionMastery = (questionId: string) => {
+    const s = stats[`q_${questionId}`];
+    if (!s || s.attempts === 0) return 0;
+    return s.correct / Math.max(s.attempts, 1);
+  };
+  
+  const getQuestionAttempts = (questionId: string) => {
+    const s = stats[`q_${questionId}`];
+    return s ? s.attempts : 0;
   };
 
-  return { stats, recordAnswer, recordCompletion, getMastery, resetMastery };
+  const resetMastery = () => {
+    if (!currentUser) return;
+    setStats({});
+    localStorage.removeItem(getStorageKey());
+  };
+
+  return { stats, recordAnswer, recordCompletion, getMastery, getQuestionMastery, getQuestionAttempts, resetMastery };
 };

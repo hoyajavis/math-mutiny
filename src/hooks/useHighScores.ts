@@ -1,40 +1,52 @@
 import { useState, useEffect } from 'react';
+import { useUser } from './useUser';
 
 export const useHighScores = () => {
+  const { currentUser } = useUser();
   const [randomHighScore, setRandomHighScore] = useState(0);
   const [challengeHighScore, setChallengeHighScore] = useState(0);
 
-  useEffect(() => {
-    const savedRandom = localStorage.getItem('math_mutiny_random_high');
-    if (savedRandom) setRandomHighScore(parseInt(savedRandom));
+  const getRandomKey = () => `math_mutiny_random_high_${currentUser}`;
+  const getChallengeKey = () => `math_mutiny_challenge_high_${currentUser}`;
 
-    const savedChallenge = localStorage.getItem('math_mutiny_challenge_high');
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    const savedRandom = localStorage.getItem(getRandomKey());
+    if (savedRandom) setRandomHighScore(parseInt(savedRandom));
+    else setRandomHighScore(0);
+
+    const savedChallenge = localStorage.getItem(getChallengeKey());
     if (savedChallenge) setChallengeHighScore(parseInt(savedChallenge));
-  }, []);
+    else setChallengeHighScore(0);
+  }, [currentUser]);
 
   const recordRandomScore = (xp: number) => {
+    if (!currentUser) return false;
     if (xp > randomHighScore) {
       setRandomHighScore(xp);
-      localStorage.setItem('math_mutiny_random_high', xp.toString());
+      localStorage.setItem(getRandomKey(), xp.toString());
       return true;
     }
     return false;
   };
 
   const recordChallengeScore = (timeRemaining: number) => {
+    if (!currentUser) return false;
     if (timeRemaining > challengeHighScore) {
       setChallengeHighScore(timeRemaining);
-      localStorage.setItem('math_mutiny_challenge_high', timeRemaining.toString());
+      localStorage.setItem(getChallengeKey(), timeRemaining.toString());
       return true;
     }
     return false;
   };
 
   const resetHighScores = () => {
+    if (!currentUser) return;
     setRandomHighScore(0);
     setChallengeHighScore(0);
-    localStorage.removeItem('math_mutiny_random_high');
-    localStorage.removeItem('math_mutiny_challenge_high');
+    localStorage.removeItem(getRandomKey());
+    localStorage.removeItem(getChallengeKey());
   };
 
   return { randomHighScore, challengeHighScore, recordRandomScore, recordChallengeScore, resetHighScores };

@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GameMode, Question } from '../types';
-import { generateSequential, generateRandom } from '../utils/math';
+import { generateSequential, generateRandom, generateChallengeFSRS } from '../utils/math';
 import { triggerEffect } from '../utils/effects';
 import { sarcasm } from '../data/sarcasm';
 import { playSuccessSound, playFailSound, playLaserSound, playExplosionSound } from '../utils/audio';
 import { useXP } from '../hooks/useXP';
 import { useMastery } from '../hooks/useMastery';
 import { useHighScores } from '../hooks/useHighScores';
+import { useFSRS } from '../hooks/useFSRS';
 
 const BOSSES = [
   { 
@@ -69,7 +70,8 @@ interface QuizModeProps {
 
 export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
   const { addXp } = useXP();
-  const { recordAnswer, recordCompletion, getMastery } = useMastery();
+  const { recordAnswer, recordCompletion, getMastery, getQuestionMastery, getQuestionAttempts } = useMastery();
+  const { recordAttempt, getAllCards } = useFSRS();
   const { randomHighScore, challengeHighScore, recordRandomScore, recordChallengeScore } = useHighScores();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -79,6 +81,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
   const [input, setInput] = useState('');
   const [timeLeft, setTimeLeft] = useState(60);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [zeroCeleb, setZeroCeleb] = useState(false);
   const [tableSelect, setTableSelect] = useState<number | null>(mode === 'sequential' ? null : 0);
   const [botMessage, setBotMessage] = useState("Show me what you got, human.");
   const [bossMessage, setBossMessage] = useState("");
@@ -88,6 +91,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
   const [bossDefeated, setBossDefeated] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const [newHighScoreAlert, setNewHighScoreAlert] = useState(false);
+  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -211,15 +215,25 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
     if (mode === 'random') {
       setQuestions(generateRandom(20));
       setBotMessage("Show me what you got, human.");
+      setQuestionStartTime(Date.now());
     } else if (mode === 'challenge') {
-      setQuestions(generateRandom(100)); // Lots of questions for challenge
-      setTimeLeft(60);
-      setBossHp(20);
-      setBossDefeated(false);
-      const boss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
-      setCurrentBoss(boss);
-      setBossMessage(boss.taunts[Math.floor(Math.random() * boss.taunts.length)]);
-      setBotMessage("I'm in your corner! Let's take this guy down!");
+      const initChallenge = async () => {
+        const cardsArray = await getAllCards();
+        const cardsRecord = cardsArray.reduce((acc, c) => {
+          acc[c.factId] = c.card;
+          return acc;
+        }, {} as Record<string, import('ts-fsrs').Card>);
+        setQuestions(generateChallengeFSRS(100, cardsRecord)); // Lots of questions for challenge
+        setTimeLeft(60);
+        setBossHp(20);
+        setBossDefeated(false);
+        const boss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
+        setCurrentBoss(boss);
+        setBossMessage(boss.taunts[Math.floor(Math.random() * boss.taunts.length)]);
+        setBotMessage("I'm in your corner! Let's take this guy down!");
+        setQuestionStartTime(Date.now());
+      };
+      initChallenge();
     }
   }, [mode]);
 
@@ -227,6 +241,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
   const handleStartSequential = (table: number) => {
     setQuestions(generateSequential(table));
     setTableSelect(table);
+    setQuestionStartTime(Date.now());
   };
 
   // Timer for challenge
@@ -274,9 +289,15 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
 
     const currentQ = questions[currentIndex];
     const isCorrect = numInput === currentQ.answer;
+    const latencyMs = Date.now() - questionStartTime;
+
+    // Record FSRS attempt
+    recordAttempt(currentQ.id || `${currentQ.a}x${currentQ.b}`, isCorrect, latencyMs, mode);
 
     if (mode === 'sequential' && tableSelect !== null) {
-      recordAnswer(tableSelect, isCorrect);
+      recordAnswer(tableSelect, currentQ.id || '', isCorrect);
+    } else {
+      recordAnswer(currentQ.a, currentQ.id || '', isCorrect);
     }
 
     if (isCorrect) {
@@ -284,6 +305,17 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
       const xpGain = 10 + (streak * 2);
       addXp(xpGain);
       setXpEarned(prev => prev + xpGain);
+      
+      if (currentQ.a === 0 || currentQ.b === 0) {
+        setZeroCeleb(true);
+        setTimeout(() => setZeroCeleb(false), 2000);
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => {
+            triggerEffect('explosion', window.innerWidth / 2 + (Math.random() * 200 - 100), window.innerHeight / 2 + (Math.random() * 200 - 100));
+            playExplosionSound();
+          }, i * 200);
+        }
+      }
       
       if (mode === 'challenge') {
         const coachMsgs = ["Good hit!", "Keep it up!", "Right in the weak spot!", "That's it, human!"];
@@ -327,6 +359,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
       if (currentIndex + 1 < questions.length) {
         setCurrentIndex(i => i + 1);
         setInput('');
+        setQuestionStartTime(Date.now());
       } else {
         if (mode !== 'challenge') {
           addXp(100);
@@ -386,7 +419,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
           <h1 className="text-4xl font-black text-black uppercase tracking-tighter transform rotate-1 border-4 border-black bg-[#00ffff] px-4 py-2 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             Pick a Table
           </h1>
-          <button onClick={() => setMode('home')} className="doodle-button px-4 py-2 font-black uppercase text-xl">← Abort</button>
+          <button onClick={() => setMode('home')} className="doodle-button px-4 py-2 font-black uppercase text-xl text-black">← Abort</button>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center relative">
           <div className="grid grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-3xl">
@@ -461,7 +494,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
           </div>
           <div className="flex gap-6 justify-center">
             <button onClick={() => setMode('home')} className="doodle-button px-8 py-4 text-2xl font-black text-black uppercase">Menu</button>
-            <button onClick={() => {
+            <button onClick={async () => {
               setScore(0);
               setStreak(0);
               setXpEarned(0);
@@ -469,10 +502,16 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
               setIsGameOver(false);
               setInput('');
               setBotMessage("Let's try not to embarrass ourselves this time.");
+              setQuestionStartTime(Date.now());
               if (mode === 'sequential') setTableSelect(null);
               else if (mode === 'random') setQuestions(generateRandom(20));
               else if (mode === 'challenge') { 
-                setQuestions(generateRandom(100)); 
+                const cardsArray = await getAllCards();
+                const cardsRecord = cardsArray.reduce((acc, c) => {
+                  acc[c.factId] = c.card;
+                  return acc;
+                }, {} as Record<string, import('ts-fsrs').Card>);
+                setQuestions(generateChallengeFSRS(100, cardsRecord)); 
                 setTimeLeft(60); 
                 setBossHp(20); 
                 setBossDefeated(false); 
@@ -500,6 +539,19 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
 
   return (
     <div className={`flex flex-col min-h-screen p-4 md:p-6 lg:p-4 transition-colors duration-300 ${mode === 'challenge' ? `${currentBoss.bgColorClass} text-white` : ''} ${isShaking ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
+      {zeroCeleb && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: [0, 1.5, 1], rotate: 0 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: "spring", bounce: 0.7 }}
+            className="text-6xl md:text-9xl font-black text-[#ff0000] drop-shadow-[10px_10px_0px_rgba(255,255,0,1)] uppercase transform -rotate-12 bg-black px-8 py-4 border-8 border-white"
+          >
+            ZERO ANNIHILATION!
+          </motion.div>
+        </div>
+      )}
       {mode === 'challenge' && (
         <div className={`fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] ${currentBoss.gradientClass} animate-pulse z-[-1]`}></div>
       )}
@@ -523,7 +575,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
               </div>
             </div>
           ) : (
-            <div className="border-4 border-black bg-white px-4 py-2 font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="border-4 border-black bg-white text-black px-4 py-2 font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               SCORE: {score}
             </div>
           )}
@@ -539,7 +591,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
           )}
         </div>
 
-        <button onClick={() => setMode('home')} className="doodle-button px-4 py-2 font-black uppercase text-xl">← Abort</button>
+        <button onClick={() => setMode('home')} className="doodle-button px-4 py-2 font-black uppercase text-xl text-black">← Abort</button>
       </header>
 
       <div className="flex-1 flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto w-full gap-2 lg:gap-4">
@@ -573,7 +625,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
             </div>
           )}
           
-          <div className="border-4 border-black p-4 md:p-8 w-full bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+          <div className="border-4 border-black p-4 md:p-8 w-full bg-white text-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
@@ -593,25 +645,19 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
                 <form onSubmit={handleSubmit} className="w-full max-w-xs relative">
                   <input
                     ref={inputRef}
-                    type="number"
+                    type="text"
                     inputMode="none"
                     value={input}
                     onChange={e => {
-                      if (e.target.value.length <= 4) {
-                        setInput(e.target.value);
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      if (val.length <= 4) {
+                        setInput(val);
                       }
                     }}
-                    className="w-full text-center text-4xl md:text-5xl font-black p-2 md:p-4 border-[6px] border-black outline-none bg-[#ffea00] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] focus:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] focus:translate-y-[-2px] focus:translate-x-[-2px] transition-all appearance-none uppercase"
+                    className="w-full text-center text-4xl md:text-5xl font-black p-2 md:p-4 border-[6px] border-black outline-none bg-[#ffea00] text-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] focus:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] focus:translate-y-[-2px] focus:translate-x-[-2px] transition-all uppercase"
                     placeholder="?"
                     autoFocus
                   />
-                  <style>{`
-                    input[type=number]::-webkit-inner-spin-button, 
-                    input[type=number]::-webkit-outer-spin-button { 
-                      -webkit-appearance: none; 
-                      margin: 0; 
-                    }
-                  `}</style>
                 </form>
               </motion.div>
             </AnimatePresence>
@@ -625,8 +671,8 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
                   type="button"
                   onClick={() => handleNumpadClick(btn.toString())}
                   className={`doodle-button font-black text-xl md:text-2xl py-2 flex items-center justify-center
-                    ${btn === 'ENTER' ? 'bg-[#00ff00] col-span-1 text-sm md:text-lg' : 
-                      btn === 'C' ? 'bg-[#ff00ff] text-white' : 'bg-white'}
+                    ${btn === 'ENTER' ? 'bg-[#00ff00] text-black col-span-1 text-sm md:text-lg' : 
+                      btn === 'C' ? 'bg-[#ff00ff] text-white' : 'bg-white text-black'}
                   `}
                 >
                   {btn === 'ENTER' ? '↵' : btn}

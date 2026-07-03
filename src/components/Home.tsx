@@ -6,20 +6,32 @@ import { playFailSound, playSuccessSound, playLaserSound, playExplosionSound } f
 import { sarcasm } from '../data/sarcasm';
 import { useXP } from '../hooks/useXP';
 import { useHighScores } from '../hooks/useHighScores';
+import { useUser } from '../hooks/useUser';
 
 interface HomeProps {
   setMode: (mode: GameMode) => void;
 }
 
 export const Home: React.FC<HomeProps> = ({ setMode }) => {
-  const { xp, rank } = useXP();
+  const { xp, rank, addXp } = useXP();
   const { randomHighScore, challengeHighScore } = useHighScores();
+  const { currentUser } = useUser();
   const [botMsg, setBotMsg] = useState('"Welcome to Math Mutiny. Prepare to have your ego destroyed by numbers."');
   const [botPokeStage, setBotPokeStage] = useState(0);
   const [rocketState, setRocketState] = useState<'idle' | 'launched' | 'landing'>('idle');
   const [titleState, setTitleState] = useState<'idle' | 'dropped' | 'returning'>('idle');
   const [megaRocket, setMegaRocket] = useState<{ startX: number, startY: number, endX: number, endY: number, angle: number } | null>(null);
   const [hackerClicks, setHackerClicks] = useState(0);
+  const [runawayPos, setRunawayPos] = useState({ x: 0, y: 0 });
+
+  const handleRunawayHover = () => {
+    const maxX = window.innerWidth - 150;
+    const maxY = window.innerHeight - 50;
+    // absolute position instead of offset might be easier, but let's just do wild offsets
+    const newX = (Math.random() - 0.5) * 600;
+    const newY = (Math.random() - 0.5) * 600;
+    setRunawayPos({ x: newX, y: newY });
+  };
 
   // Idle mode timer
   useEffect(() => {
@@ -197,7 +209,21 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-6 overflow-hidden">
+    <div className="flex flex-col min-h-screen p-4 md:p-6 overflow-x-hidden overflow-y-auto w-full relative">
+      <motion.button
+        animate={{ x: runawayPos.x, y: runawayPos.y }}
+        transition={{ type: "spring", stiffness: 400, damping: 15 }}
+        onHoverStart={handleRunawayHover}
+        onClick={() => {
+          setBotMsg("YOU CAUGHT IT?! THE ONLY TRUE 'EASY MODE' IS CONSISTENT PRACTICE, HUMAN. BUT FINE, TAKE 500 XP.");
+          addXp(500);
+          playSuccessSound();
+          triggerEffect('rocket', window.innerWidth / 2, window.innerHeight / 2);
+        }}
+        className="absolute bottom-4 left-4 z-50 bg-[#ff00ff] text-white font-black px-4 py-2 text-xs border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase hidden md:block select-none"
+      >
+        EASY MODE
+      </motion.button>
       {megaRocket && (
         <motion.div
           initial={{ x: megaRocket.startX, y: megaRocket.startY, rotate: megaRocket.angle }}
@@ -209,7 +235,7 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
           🚀
         </motion.div>
       )}
-      <header className="flex justify-between items-center mb-12">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 gap-4 w-full">
         <div className="relative z-50">
           <h1 
             onClick={() => {
@@ -223,7 +249,7 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
                 setTimeout(() => setTitleState('idle'), 5000);
               }
             }}
-            className="text-5xl md:text-7xl font-black text-black uppercase tracking-tighter border-4 border-black bg-[#ffea00] px-4 py-2 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] cursor-pointer select-none origin-bottom-left flex"
+            className="text-[12vw] sm:text-5xl md:text-7xl font-black text-black uppercase tracking-tighter border-2 md:border-4 border-black bg-[#ffea00] px-2 md:px-4 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] cursor-pointer select-none origin-bottom-left flex max-w-full leading-none"
             style={{ transform: 'rotate(-1deg)' }}
           >
             {"MATH MUTINY!".split('').map((char, index) => {
@@ -271,17 +297,21 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
             🚀
           </motion.div>
         </div>
-        <div className="flex gap-4 hidden md:flex">
-          <div className="border-4 border-black bg-white p-3 rotate-1">
-            <p className="text-xs font-bold uppercase">Current XP</p>
-            <p className="text-2xl font-black">{xp.toLocaleString()}</p>
+        <div className="flex flex-row flex-wrap gap-2 md:gap-4 items-center mt-2 md:mt-0">
+          <div className="bg-black text-white px-2 py-1 sm:px-4 sm:py-2 border-2 sm:border-4 border-white -rotate-2 transform text-right sm:text-left">
+            <p className="text-[10px] sm:text-xs font-bold text-[#ffea00] uppercase tracking-widest">AGENT</p>
+            <p className="text-sm sm:text-xl font-black uppercase">{currentUser}</p>
+          </div>
+          <div className="border-2 sm:border-4 border-black bg-white p-1 sm:p-3 rotate-1 flex sm:block items-center gap-2">
+            <p className="text-[10px] sm:text-xs font-bold uppercase">XP</p>
+            <p className="text-sm sm:text-2xl font-black">{xp.toLocaleString()}</p>
           </div>
           <div 
             onClick={handleRankClick}
-            className="border-4 border-black bg-[#ff00ff] p-3 -rotate-1 text-white cursor-pointer select-none hover:scale-105 active:scale-95 transition-transform"
+            className="border-2 sm:border-4 border-black bg-[#ff00ff] p-1 sm:p-3 -rotate-1 text-white cursor-pointer select-none hover:scale-105 active:scale-95 transition-transform flex sm:block items-center gap-2"
           >
-            <p className="text-xs font-bold uppercase">Rank</p>
-            <p className="text-2xl font-black">{rank}</p>
+            <p className="text-[10px] sm:text-xs font-bold uppercase">Rank</p>
+            <p className="text-sm sm:text-2xl font-black">{rank}</p>
           </div>
         </div>
       </header>

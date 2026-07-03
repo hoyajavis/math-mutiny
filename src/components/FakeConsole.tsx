@@ -4,11 +4,13 @@ import { playExplosionSound, playLaserSound } from '../utils/audio';
 import { useXP } from '../hooks/useXP';
 import { useHighScores } from '../hooks/useHighScores';
 import { useMastery } from '../hooks/useMastery';
+import { useUser } from '../hooks/useUser';
 
 export const FakeConsole = () => {
   const { resetXP } = useXP();
   const { resetHighScores } = useHighScores();
   const { resetMastery } = useMastery();
+  const { currentUser, login, logout } = useUser();
 
   const [isOpen, setIsOpen] = useState(false);
   const [history, setHistory] = useState<string[]>(['SYSTEM READY.', 'Type /help for available commands.']);
@@ -44,6 +46,25 @@ export const FakeConsole = () => {
          resetMastery();
          resetHighScores();
          setHistory(prev => [...prev, `> ${maskedPassword}`, 'PASSWORD ACCEPTED.', 'USER PROGRESS RESET SUCCESSFUL.']);
+         return;
+      }
+
+      if (pendingCommand === 'user logout' && cmd === 'iamanadult') {
+         setIsAwaitingPassword(false);
+         setPasswordRetries(0);
+         setPendingCommand(null);
+         setHistory(prev => [...prev, `> ${maskedPassword}`, 'PASSWORD ACCEPTED.', 'LOGGING OUT... TERMINATING SESSION.']);
+         setTimeout(() => logout(), 1000);
+         return;
+      }
+
+      if (pendingCommand?.startsWith('user switch ') && cmd === 'iamanadult') {
+         setIsAwaitingPassword(false);
+         setPasswordRetries(0);
+         const newName = pendingCommand.substring(12).trim();
+         setPendingCommand(null);
+         setHistory(prev => [...prev, `> ${maskedPassword}`, 'PASSWORD ACCEPTED.', `SWITCHING TO USER: ${newName.toUpperCase()}`]);
+         setTimeout(() => login(newName), 1000);
          return;
       }
 
@@ -86,7 +107,7 @@ export const FakeConsole = () => {
     } else {
       switch (cleanCmd) {
         case 'help':
-          response = 'Commands: /ping, /clear, /bot dance, /bot mad, /spawn boss, /give score, /godmode, /noclip, /spin, /matrix, /whoami, /date, /pizza, /echo, /sudo, /user reset';
+          response = 'Commands: /ping, /clear, /bot dance, /bot mad, /spawn boss, /give score, /godmode, /noclip, /spin, /matrix, /whoami, /date, /pizza, /echo, /sudo, /user reset, /user switch <name>, /user logout';
           break;
         case 'ping':
           response = `Pong! (Latency: ${Math.floor(Math.random() * 50) + 10}ms)`;
@@ -144,7 +165,26 @@ export const FakeConsole = () => {
           setPendingCommand('user reset');
           setHistory(prev => [...prev, `> ${cmd}`, 'WARNING: THIS WILL ERASE ALL TRACKED USER DATA.', 'ENTER ADMIN PASSWORD TO CONFIRM:']);
           return;
+        case 'user logout':
+          setIsAwaitingPassword(true);
+          setPasswordRetries(0);
+          setPendingCommand('user logout');
+          setHistory(prev => [...prev, `> ${cmd}`, 'WARNING: LOGGING OUT.', 'ENTER ADMIN PASSWORD TO CONFIRM:']);
+          return;
         default:
+          if (cleanCmd.startsWith('user switch ')) {
+            const newName = cleanCmd.substring(12).trim();
+            if (newName) {
+              setIsAwaitingPassword(true);
+              setPasswordRetries(0);
+              setPendingCommand(`user switch ${newName}`);
+              setHistory(prev => [...prev, `> ${cmd}`, `WARNING: SWITCHING USER PROFILES TO ${newName.toUpperCase()}.`, 'ENTER ADMIN PASSWORD TO CONFIRM:']);
+            } else {
+              response = 'ERROR: User name not provided.';
+              setHistory(prev => [...prev, `> ${cmd}`, response]);
+            }
+            return;
+          }
           if (cleanCmd.startsWith('give') || cleanCmd === 'godmode' || cleanCmd === 'noclip' || cleanCmd === 'hack' || cleanCmd === 'admin') {
             setIsAwaitingPassword(true);
             setPasswordRetries(0);

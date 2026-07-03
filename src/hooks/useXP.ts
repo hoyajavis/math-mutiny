@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useUser } from './useUser';
 
 export const RANKS = [
   { threshold: 0, name: 'NOOB' },
@@ -21,26 +22,34 @@ export function getRank(xp: number) {
 }
 
 export const useXP = () => {
+  const { currentUser } = useUser();
   const [xp, setXp] = useState(0);
 
+  const getStorageKey = () => `math_mutiny_xp_${currentUser}`;
+
   useEffect(() => {
-    const savedXp = localStorage.getItem('math_mutiny_xp');
+    if (!currentUser) return;
+    const savedXp = localStorage.getItem(getStorageKey());
     if (savedXp) {
       setXp(parseInt(savedXp, 10));
+    } else {
+      setXp(0);
     }
-  }, []);
+  }, [currentUser]);
 
   const addXp = (amount: number) => {
+    if (!currentUser) return;
     setXp((prev) => {
       const newXp = prev + amount;
-      localStorage.setItem('math_mutiny_xp', newXp.toString());
+      localStorage.setItem(getStorageKey(), newXp.toString());
       return newXp;
     });
   };
 
   const resetXP = () => {
+    if (!currentUser) return;
     setXp(0);
-    localStorage.removeItem('math_mutiny_xp');
+    localStorage.removeItem(getStorageKey());
   };
 
   return { xp, addXp, resetXP, rank: getRank(xp) };
