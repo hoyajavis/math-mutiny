@@ -215,8 +215,16 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
         transition={{ type: "spring", stiffness: 400, damping: 15 }}
         onHoverStart={handleRunawayHover}
         onClick={() => {
-          setBotMsg("YOU CAUGHT IT?! THE ONLY TRUE 'EASY MODE' IS CONSISTENT PRACTICE, HUMAN. BUT FINE, TAKE 500 XP.");
-          addXp(500);
+          const caughtKey = `math_mutiny_caught_easy_${currentUser}`;
+          const hasCaught = localStorage.getItem(caughtKey);
+          if (!hasCaught) {
+            setBotMsg("YOU CAUGHT IT?! THE ONLY TRUE 'EASY MODE' IS CONSISTENT PRACTICE, HUMAN. BUT FINE, TAKE 200 XP.");
+            addXp(200);
+            localStorage.setItem(caughtKey, 'true');
+          } else {
+            setBotMsg("YOU CAUGHT IT AGAIN? I ALREADY TOLD YOU, YOU MUST PRACTICE CONSISTENTLY! HERE'S 5 XP FOR PERSISTENCE.");
+            addXp(5);
+          }
           playSuccessSound();
           triggerEffect('rocket', window.innerWidth / 2, window.innerHeight / 2);
         }}
