@@ -3,13 +3,15 @@ import { useUser } from './useUser';
 
 export const RANKS = [
   { threshold: 0, name: 'NOOB' },
-  { threshold: 100, name: 'CALCULATOR' },
-  { threshold: 500, name: 'MATHLETE' },
-  { threshold: 1000, name: 'NUMBER CRUNCHER' },
-  { threshold: 2500, name: 'EQUATION MASTER' },
-  { threshold: 5000, name: 'MATH WIZARD' },
-  { threshold: 10000, name: 'LASER LORD' },
+  { threshold: 500, name: 'CALCULATOR' },
+  { threshold: 1500, name: 'MATHLETE' },
+  { threshold: 3000, name: 'NUMBER CRUNCHER' },
+  { threshold: 6000, name: 'EQUATION MASTER' },
+  { threshold: 12000, name: 'MATH WIZARD' },
+  { threshold: 25000, name: 'LASER LORD' },
   { threshold: 50000, name: 'MATH-BOT OVERLORD' },
+  { threshold: 75000, name: 'QUANTUM BRAIN' },
+  { threshold: 100000, name: 'OMNISCIENT ALGORITHM' },
 ];
 
 export function getRank(xp: number) {
