@@ -213,7 +213,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
   // Setup game
   useEffect(() => {
     if (mode === 'random') {
-      setQuestions(generateDivisionRandom(20));
+      setQuestions(generateDivisionRandom(15));
       setBotMessage("Show me what you got, human.");
       setQuestionStartTime(Date.now());
     } else if (mode === 'challenge') {
@@ -504,7 +504,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
               setBotMessage("Let's try not to embarrass ourselves this time.");
               setQuestionStartTime(Date.now());
               if (mode === 'sequential') setTableSelect(null);
-              else if (mode === 'random') setQuestions(generateDivisionRandom(20));
+              else if (mode === 'random') setQuestions(generateDivisionRandom(15));
               else if (mode === 'challenge') { 
                 const cardsArray = await getAllCards();
                 const cardsRecord = cardsArray.reduce((acc, c) => {

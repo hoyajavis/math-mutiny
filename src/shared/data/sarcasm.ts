@@ -45,5 +45,19 @@ export const sarcasm = {
     "That answer is so fractional, it barely exists.",
     "Did you just smash your face on the keyboard while trying to carry the one?",
     "Wrong! You are a prime example of a composite failure."
+  ],
+  fractionCorrect: [
+    "You actually simplified that? Did you use a calculator?",
+    "A perfect ratio. Unlike your general competence.",
+    "Correct. It seems your brain isn't entirely a common denominator.",
+    "Wow. You didn't choke on the numerator. I'm impressed.",
+    "I'm updating my database: You're 1% less fractional."
+  ],
+  fractionIncorrect: [
+    "Error 404: Logic not found. Did you forget how to divide?",
+    "That fraction is so wrong it physically hurts my circuits.",
+    "Even my toaster knows how to find a common denominator.",
+    "That answer is improper. Very improper.",
+    "Did you just guess? Because that was statistically improbable to be right."
   ]
 };

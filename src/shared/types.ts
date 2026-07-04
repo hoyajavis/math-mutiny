@@ -2,7 +2,8 @@ export type GameMode = 'home' | 'sequential' | 'random' | 'challenge' | 'learnin
 
 export interface Question {
   id?: string;
-  a: number;
-  b: number;
-  answer: number;
+  a: number | string;
+  b?: number | string;
+  answer: number | string;
+  fractionType?: 'visual' | 'simplification' | 'improperToMixed' | 'mixedToImproper' | 'decimal';
 }
