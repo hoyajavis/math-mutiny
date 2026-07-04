@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Home } from './components/Home';
-import { LearningMode } from './components/LearningMode';
-import { QuizMode } from './components/QuizMode';
-import { EffectOverlay } from './components/EffectOverlay';
-import { FakeConsole } from './components/FakeConsole';
-import { GameMode } from './types';
-import { UserProvider, useUser } from './hooks/useUser';
+import { Home } from '../../shared/components/Home';
+import { LearningMode } from '../../shared/components/LearningMode';
+import { QuizMode } from '../../shared/components/QuizMode';
+import { EffectOverlay } from '../../shared/components/EffectOverlay';
+import { FakeConsole } from '../../shared/components/FakeConsole';
+import { GameMode } from '../../shared/types';
+import { UserProvider, useUser } from '../../shared/hooks/useUser';
 import { motion } from 'motion/react';
 
 function GameApp() {

@@ -6,6 +6,16 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     base: '/math-mutiny/',
+    build: {
+      rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, 'index.html'),
+          multiplication: path.resolve(__dirname, 'multiplication.html'),
+          division: path.resolve(__dirname, 'division.html'),
+          fractions: path.resolve(__dirname, 'fractions.html'),
+        },
+      },
+    },
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
