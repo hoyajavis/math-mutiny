@@ -3,13 +3,13 @@ import { triggerEffect } from '../utils/effects';
 import { playExplosionSound, playLaserSound } from '../utils/audio';
 import { useXP } from '../hooks/useXP';
 import { useHighScores } from '../hooks/useHighScores';
-import { useMastery } from '../hooks/useMastery';
+
 import { useUser } from '../hooks/useUser';
 
 export const FakeConsole = () => {
   const { resetXP } = useXP();
   const { resetHighScores } = useHighScores();
-  const { resetMastery } = useMastery();
+
   const { currentUser, login, logout } = useUser();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -43,7 +43,6 @@ export const FakeConsole = () => {
          setPasswordRetries(0);
          setPendingCommand(null);
          resetXP();
-         resetMastery();
          resetHighScores();
          setHistory(prev => [...prev, `> ${maskedPassword}`, 'PASSWORD ACCEPTED.', 'USER PROGRESS RESET SUCCESSFUL.']);
          return;

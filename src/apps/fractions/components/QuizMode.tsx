@@ -6,7 +6,6 @@ import { triggerEffect } from '../../../shared/utils/effects';
 import { sarcasm } from '../../../shared/data/sarcasm';
 import { playSuccessSound, playFailSound, playLaserSound, playExplosionSound } from '../../../shared/utils/audio';
 import { useXP } from '../../../shared/hooks/useXP';
-import { useMastery } from '../../../shared/hooks/useMastery';
 import { useHighScores } from '../../../shared/hooks/useHighScores';
 import { useFSRS } from '../../../shared/hooks/useFSRS';
 
@@ -70,8 +69,30 @@ interface QuizModeProps {
 
 export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
   const { addXp } = useXP();
-  const { recordAnswer, recordCompletion, getMastery, getQuestionMastery, getQuestionAttempts } = useMastery();
-  const { recordAttempt, getAllCards } = useFSRS();
+  const { recordAttempt, getAllCards, getGroupStability } = useFSRS();
+  const [skillStabilities, setSkillStabilities] = useState<Record<string, number>>({});
+  const [tableSelect, setTableSelect] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (mode === 'sequential' && tableSelect === null && getGroupStability) {
+      const loadStabilities = async () => {
+        const newStabilities: Record<string, number> = {};
+        const SKILL_PREFIX_MAP: Record<string, string> = {
+          'Visuals': 'vis',
+          'Simplifying': 'simp',
+          'To Mixed': 'mix',
+          'To Improper': 'imp',
+          'Decimals': 'dec'
+        };
+        for (const skill of Object.keys(SKILL_PREFIX_MAP)) {
+          const prefix = SKILL_PREFIX_MAP[skill];
+          newStabilities[skill] = await getGroupStability(id => id.startsWith(prefix + '_'));
+        }
+        setSkillStabilities(newStabilities);
+      };
+      loadStabilities();
+    }
+  }, [mode, tableSelect, getGroupStability]);
   const { randomHighScore, challengeHighScore, recordRandomScore, recordChallengeScore } = useHighScores();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -82,7 +103,6 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
   const [timeLeft, setTimeLeft] = useState(60);
   const [isGameOver, setIsGameOver] = useState(false);
   const [zeroCeleb, setZeroCeleb] = useState(false);
-  const [tableSelect, setTableSelect] = useState<string | null>(null);
   const [botMessage, setBotMessage] = useState("Show me what you got, human.");
   const [bossMessage, setBossMessage] = useState("");
   const [botPokeStage, setBotPokeStage] = useState(0);
@@ -305,12 +325,6 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
     // Record FSRS attempt
     recordAttempt(currentQ.id || 'fraction', isCorrect, latencyMs, mode);
 
-    if (mode === 'sequential' && tableSelect !== null) {
-      recordAnswer(0, currentQ.id || '', isCorrect);
-    } else {
-      recordAnswer(0, currentQ.id || '', isCorrect);
-    }
-
     if (isCorrect) {
       playSuccessSound();
       const xpGain = 10 + (streak * 2);
@@ -375,9 +389,6 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
         if (mode !== 'challenge') {
           addXp(100);
           setXpEarned(prev => prev + 100);
-          if (mode === 'sequential' && tableSelect !== null) {
-            recordCompletion(tableSelect);
-          }
         }
         setIsGameOver(true);
       }
@@ -435,11 +446,16 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
         <div className="flex-1 flex flex-col items-center justify-center relative">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full max-w-4xl">
             {['Visuals', 'Simplifying', 'To Mixed', 'To Improper', 'Decimals'].map(skill => {
+              const mastery = skillStabilities[skill] || 0;
+              const hue = Math.floor(mastery * 120);
+              const bgColor = mastery > 0 ? `hsl(${hue}, 100%, 60%)` : 'white';
+
               return (
                 <button
                   key={skill}
                   onClick={() => handleStartSequential(skill)}
-                  className={`border-4 border-purple-950 bg-white py-6 md:py-8 text-2xl md:text-3xl font-black text-purple-950 hover:-translate-y-2 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] doodle-button`}
+                  style={{ backgroundColor: bgColor }}
+                  className={`border-4 border-purple-950 py-6 md:py-8 text-2xl md:text-3xl font-black text-purple-950 hover:-translate-y-2 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] doodle-button`}
                 >
                   {skill}
                 </button>

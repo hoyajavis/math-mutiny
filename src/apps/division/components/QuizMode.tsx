@@ -6,7 +6,6 @@ import { triggerEffect } from '../../../shared/utils/effects';
 import { sarcasm } from '../../../shared/data/sarcasm';
 import { playSuccessSound, playFailSound, playLaserSound, playExplosionSound } from '../../../shared/utils/audio';
 import { useXP } from '../../../shared/hooks/useXP';
-import { useMastery } from '../../../shared/hooks/useMastery';
 import { useHighScores } from '../../../shared/hooks/useHighScores';
 import { useFSRS } from '../../../shared/hooks/useFSRS';
 
@@ -70,8 +69,21 @@ interface QuizModeProps {
 
 export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
   const { addXp } = useXP();
-  const { recordAnswer, recordCompletion, getMastery, getQuestionMastery, getQuestionAttempts } = useMastery();
-  const { recordAttempt, getAllCards } = useFSRS();
+  const { recordAttempt, getAllCards, getGroupStability } = useFSRS();
+  const [tableStabilities, setTableStabilities] = useState<Record<number, number>>({});
+
+  useEffect(() => {
+    if (mode === 'sequential' && tableSelect === null && getGroupStability) {
+      const loadStabilities = async () => {
+        const newStabilities: Record<number, number> = {};
+        for (let i = 1; i <= 12; i++) {
+          newStabilities[i] = await getGroupStability(id => id.endsWith('_' + i));
+        }
+        setTableStabilities(newStabilities);
+      };
+      loadStabilities();
+    }
+  }, [mode, tableSelect, getGroupStability]);
   const { randomHighScore, challengeHighScore, recordRandomScore, recordChallengeScore } = useHighScores();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -294,12 +306,6 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
     // Record FSRS attempt
     recordAttempt(currentQ.id || `${currentQ.a}x${currentQ.b}`, isCorrect, latencyMs, mode);
 
-    if (mode === 'sequential' && tableSelect !== null) {
-      recordAnswer(tableSelect, currentQ.id || '', isCorrect);
-    } else {
-      recordAnswer(currentQ.a, currentQ.id || '', isCorrect);
-    }
-
     if (isCorrect) {
       playSuccessSound();
       const xpGain = 10 + (streak * 2);
@@ -364,9 +370,6 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
         if (mode !== 'challenge') {
           addXp(100);
           setXpEarned(prev => prev + 100);
-          if (mode === 'sequential' && tableSelect !== null) {
-            recordCompletion(tableSelect);
-          }
         }
         setIsGameOver(true);
       }
@@ -424,7 +427,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
         <div className="flex-1 flex flex-col items-center justify-center relative">
           <div className="grid grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-3xl">
             {Array.from({length: 12}, (_, i) => i + 1).map(num => {
-              const mastery = getMastery(num);
+              const mastery = tableStabilities[num] || 0;
               const hue = Math.floor(mastery * 120); // 0 (red) to 120 (green)
               const bgColor = mastery > 0 ? `hsl(${hue}, 100%, 60%)` : 'white';
 

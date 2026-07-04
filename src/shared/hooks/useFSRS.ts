@@ -96,5 +96,19 @@ export const useFSRS = () => {
     return await db.factStates.where('userId').equals(currentUser).toArray();
   };
 
-  return { recordAttempt, getCard, getAllCards, isReady };
+  const getGroupStability = async (filterFn: (factId: string) => boolean): Promise<number> => {
+    if (!currentUser) return 0;
+    const cards = await db.factStates.where('userId').equals(currentUser).toArray();
+    const matchingCards = cards.filter(c => filterFn(c.factId));
+    
+    if (matchingCards.length === 0) return 0;
+    
+    const totalStability = matchingCards.reduce((sum, state) => sum + state.card.stability, 0);
+    const avgStability = totalStability / matchingCards.length;
+    
+    // Normalize: 10 days stability = 1.0 mastery (100% green)
+    return Math.min(avgStability / 10, 1);
+  };
+
+  return { recordAttempt, getCard, getAllCards, getGroupStability, isReady };
 };
