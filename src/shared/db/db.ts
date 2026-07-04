@@ -23,8 +23,8 @@ export class MathMutinyDB extends Dexie {
   factStates!: Table<FactState, string>;
   attemptLogs!: Table<AttemptLog, number>;
 
-  constructor() {
-    super('MathMutinyDB');
+  constructor(dbName: string) {
+    super(dbName);
     this.version(2).stores({
       factStates: 'id, userId, factId',
       attemptLogs: '++id, userId, factId, timestamp'
@@ -32,4 +32,8 @@ export class MathMutinyDB extends Dexie {
   }
 }
 
-export const db = new MathMutinyDB();
+export let db: MathMutinyDB;
+
+export const initDB = (dbName: string) => {
+  db = new MathMutinyDB(dbName);
+};

@@ -72,3 +72,87 @@ export const generateChallengeFSRS = (
   return result;
 };
 
+export const generateDivisionSequential = (divisor: number): Question[] => {
+  const up = Array.from({ length: 13 }, (_, quotient) => ({
+    id: `${divisor}d${quotient}`, // id format: divisor_d_quotient
+    a: divisor * quotient, // Dividend
+    b: divisor,            // Divisor
+    answer: quotient
+  }));
+  const down = Array.from({ length: 12 }, (_, i) => {
+    const quotient = 11 - i;
+    return {
+      id: `${divisor}d${quotient}`,
+      a: divisor * quotient,
+      b: divisor,
+      answer: quotient
+    };
+  });
+  return [...up, ...down];
+};
+
+export const generateDivisionRandom = (count: number): Question[] => {
+  return Array.from({ length: count }, () => {
+    const divisor = Math.floor(Math.random() * 12) + 1; // 1 to 12
+    const quotient = Math.floor(Math.random() * 13);    // 0 to 12
+    return { 
+      id: `${divisor}d${quotient}`, 
+      a: divisor * quotient, 
+      b: divisor, 
+      answer: quotient 
+    };
+  });
+};
+
+export const generateDivisionChallengeFSRS = (
+  count: number,
+  cards: Record<string, Card>
+): Question[] => {
+  const allPairs = [];
+  for (let divisor = 1; divisor <= 12; divisor++) {
+    for (let quotient = 0; quotient <= 12; quotient++) {
+      allPairs.push({ 
+        id: `${divisor}d${quotient}`, 
+        a: divisor * quotient, 
+        b: divisor, 
+        answer: quotient 
+      });
+    }
+  }
+
+  const now = new Date().getTime();
+
+  const weights = allPairs.map(pair => {
+    const card = cards[pair.id];
+    
+    if (!card) {
+      return 20; // Unseen problems have decent priority
+    }
+    
+    const dueTime = new Date(card.due).getTime();
+    if (dueTime <= now) {
+      const daysOverdue = (now - dueTime) / (1000 * 60 * 60 * 24);
+      return Math.min(100, 50 + daysOverdue * 10);
+    } else {
+      return Math.max(1, 10 - card.stability);
+    }
+  });
+
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+  const result: Question[] = [];
+  for (let i = 0; i < count; i++) {
+    let r = Math.random() * totalWeight;
+    let selected = allPairs[0];
+    for (let j = 0; j < allPairs.length; j++) {
+      r -= weights[j];
+      if (r <= 0) {
+        selected = allPairs[j];
+        break;
+      }
+    }
+    result.push({ ...selected });
+  }
+  return result;
+};
+

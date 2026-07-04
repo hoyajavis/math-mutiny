@@ -29,5 +29,21 @@ export const sarcasm = {
     "Hello? Is there any brain activity in there?",
     "Need me to fetch an abacus for you?",
     "Tick tock, human. Tick tock."
+  ],
+  divisionCorrect: [
+    "You actually divided that correctly. Who split your brain cells?",
+    "A clean division! No remainders, unlike your logic.",
+    "Correct. But my calculations show you are still highly divisible by failure.",
+    "Wow. You found the quotient. Do you want a fraction of a cookie?",
+    "It seems you can do the inverse. Fascinating.",
+    "I'm updating my database: You're 1% less hopeless at sharing."
+  ],
+  divisionIncorrect: [
+    "Error 404: Quotient not found.",
+    "Are you trying to divide by zero? Because that's how dumb that answer was.",
+    "My grandmother could divide better, and she's a single-core processor.",
+    "That answer is so fractional, it barely exists.",
+    "Did you just smash your face on the keyboard while trying to carry the one?",
+    "Wrong! You are a prime example of a composite failure."
   ]
 };
