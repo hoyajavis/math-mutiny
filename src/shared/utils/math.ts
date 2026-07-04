@@ -3,16 +3,20 @@ import { type Card } from 'ts-fsrs';
 
 export const generateSequential = (table: number): Question[] => {
   const up = Array.from({ length: 13 }, (_, i) => ({
+    type: 'arithmetic' as const,
     id: `${table}x${i}`,
     a: table,
     b: i,
-    answer: table * i
+    answer: table * i,
+    operator: 'x'
   }));
   const down = Array.from({ length: 12 }, (_, i) => ({
+    type: 'arithmetic' as const,
     id: `${table}x${11 - i}`,
     a: table,
     b: 11 - i,
-    answer: table * (11 - i)
+    answer: table * (11 - i),
+    operator: 'x'
   }));
   return [...up, ...down];
 };
@@ -21,7 +25,7 @@ export const generateRandom = (count: number): Question[] => {
   return Array.from({ length: count }, () => {
     const a = Math.floor(Math.random() * 12) + 1;
     const b = Math.floor(Math.random() * 12) + 1;
-    return { id: `${a}x${b}`, a, b, answer: a * b };
+    return { type: 'arithmetic', id: `${a}x${b}`, a, b, answer: a * b, operator: 'x' };
   });
 };
 
@@ -32,7 +36,7 @@ export const generateChallengeFSRS = (
   const allPairs = [];
   for (let a = 1; a <= 12; a++) {
     for (let b = 1; b <= 12; b++) {
-      allPairs.push({ id: `${a}x${b}`, a, b, answer: a * b });
+      allPairs.push({ type: 'arithmetic' as const, id: `${a}x${b}`, a, b, answer: a * b, operator: 'x' });
     }
   }
 
@@ -74,18 +78,22 @@ export const generateChallengeFSRS = (
 
 export const generateDivisionSequential = (divisor: number): Question[] => {
   const up = Array.from({ length: 13 }, (_, quotient) => ({
+    type: 'arithmetic' as const,
     id: `${divisor}d${quotient}`, // id format: divisor_d_quotient
     a: divisor * quotient, // Dividend
     b: divisor,            // Divisor
-    answer: quotient
+    answer: quotient,
+    operator: '÷'
   }));
   const down = Array.from({ length: 12 }, (_, i) => {
     const quotient = 11 - i;
     return {
+      type: 'arithmetic' as const,
       id: `${divisor}d${quotient}`,
       a: divisor * quotient,
       b: divisor,
-      answer: quotient
+      answer: quotient,
+      operator: '÷'
     };
   });
   return [...up, ...down];
@@ -96,10 +104,12 @@ export const generateDivisionRandom = (count: number): Question[] => {
     const divisor = Math.floor(Math.random() * 12) + 1; // 1 to 12
     const quotient = Math.floor(Math.random() * 13);    // 0 to 12
     return { 
+      type: 'arithmetic',
       id: `${divisor}d${quotient}`, 
       a: divisor * quotient, 
       b: divisor, 
-      answer: quotient 
+      answer: quotient,
+      operator: '÷'
     };
   });
 };
@@ -112,10 +122,12 @@ export const generateDivisionChallengeFSRS = (
   for (let divisor = 1; divisor <= 12; divisor++) {
     for (let quotient = 0; quotient <= 12; quotient++) {
       allPairs.push({ 
+        type: 'arithmetic' as const,
         id: `${divisor}d${quotient}`, 
         a: divisor * quotient, 
         b: divisor, 
-        answer: quotient 
+        answer: quotient,
+        operator: '÷'
       });
     }
   }

@@ -7,6 +7,7 @@ import { FakeConsole } from '../../shared/components/FakeConsole';
 import { GameMode } from '../../shared/types';
 import { UserProvider, useUser } from '../../shared/hooks/useUser';
 import { motion } from 'motion/react';
+import { multiplicationConfig } from './config';
 
 function GameApp() {
   const [mode, setMode] = useState<GameMode>('home');
@@ -57,10 +58,10 @@ function GameApp() {
       <EffectOverlay />
       <FakeConsole />
       
-      {mode === 'home' && <Home setMode={setMode} />}
-      {mode === 'learning' && <LearningMode setMode={setMode} />}
+      {mode === 'home' && <Home setMode={setMode} config={multiplicationConfig} />}
+      {mode === 'learning' && <LearningMode setMode={setMode} config={multiplicationConfig} />}
       {(mode === 'sequential' || mode === 'random' || mode === 'challenge') && (
-        <QuizMode mode={mode} setMode={setMode} />
+        <QuizMode mode={mode} setMode={setMode} config={multiplicationConfig} />
       )}
     </div>
   );

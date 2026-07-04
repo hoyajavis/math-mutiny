@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { GameMode } from '../types';
+import { GameMode, AppConfig } from '../types';
 import { triggerEffect } from '../utils/effects';
 import { playFailSound, playSuccessSound, playLaserSound, playExplosionSound } from '../utils/audio';
 import { sarcasm } from '../data/sarcasm';
@@ -10,12 +10,13 @@ import { useUser } from '../hooks/useUser';
 
 interface HomeProps {
   setMode: (mode: GameMode) => void;
+  config: AppConfig;
 }
 
-export const Home: React.FC<HomeProps> = ({ setMode }) => {
+export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
   const { xp, rank, addXp } = useXP();
   const { randomHighScore, challengeHighScore } = useHighScores();
-  const { currentUser } = useUser();
+  const { currentUser, logout } = useUser();
   const [botMsg, setBotMsg] = useState('"Welcome to Math Mutiny. Prepare to have your ego destroyed by numbers."');
   const [botPokeStage, setBotPokeStage] = useState(0);
   const [rocketState, setRocketState] = useState<'idle' | 'launched' | 'landing'>('idle');
@@ -40,7 +41,7 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
     const resetIdle = () => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
-        setBotMsg(`"${sarcasm.idle[Math.floor(Math.random() * sarcasm.idle.length)]}"`);
+        setBotMsg(`"${config.sarcasm.idle[Math.floor(Math.random() * config.sarcasm.idle.length)]}"`);
       }, 30000);
     };
 
@@ -244,9 +245,13 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
         </motion.div>
       )}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 gap-4 w-full">
-        <div className="relative z-50">
-          <h1 
-            onClick={() => {
+        <div className="flex flex-col items-start gap-4">
+          <a href="/math-mutiny/index.html" className="doodle-button px-2 py-1 md:px-4 md:py-2 text-sm md:text-lg font-black uppercase text-black bg-white">
+            ← Back to Hub
+          </a>
+          <div className="relative z-50">
+            <h1 
+              onClick={() => {
               if (titleState === 'idle') {
                 setTitleState('dropped');
                 playFailSound();
@@ -257,35 +262,14 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
                 setTimeout(() => setTitleState('idle'), 5000);
               }
             }}
-            className="text-[12vw] sm:text-5xl md:text-7xl font-black text-black uppercase tracking-tighter border-2 md:border-4 border-black bg-[#ffea00] px-2 md:px-4 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] cursor-pointer select-none origin-bottom-left flex max-w-full leading-none"
-            style={{ transform: 'rotate(-1deg)' }}
+            className="text-4xl md:text-6xl lg:text-7xl font-black text-black uppercase tracking-tighter cursor-pointer select-none relative z-50 inline-block"
+            style={{ 
+              textShadow: '4px 4px 0px #fff, 8px 8px 0px #000',
+              transform: titleState === 'dropped' ? 'translateY(100vh) rotate(180deg)' : titleState === 'returning' ? 'translateY(0) rotate(360deg)' : 'rotate(-2deg)',
+              transition: titleState === 'dropped' ? 'transform 2s cubic-bezier(0.5, 0, 0.75, 0)' : titleState === 'returning' ? 'transform 1s cubic-bezier(0.25, 0.75, 0.5, 1.25)' : 'none'
+            }}
           >
-            {"MATH MUTINY!".split('').map((char, index) => {
-              // Letters that fall sideways (e.g. M, H, M, T, Y)
-              const fallsSideways = [0, 3, 5, 7, 10].includes(index);
-              const xDrop = fallsSideways ? (index % 2 === 0 ? 150 : -150) : 0;
-              const rotateDrop = fallsSideways ? (index % 2 === 0 ? 120 : -120) : 90;
-
-              return (
-                <motion.span
-                  key={index}
-                  initial={false}
-                  animate={
-                    titleState === 'dropped' ? { y: '100vh', x: xDrop, rotate: rotateDrop, opacity: 0 } : 
-                    titleState === 'returning' ? { y: ['-100vh', 0], x: 0, rotate: [-rotateDrop, 0], opacity: 1 } : 
-                    { y: 0, x: 0, rotate: 0, opacity: 1 }
-                  }
-                  transition={
-                    titleState === 'dropped' ? { type: "tween", ease: "easeIn", duration: 1 + Math.random() * 0.5 } : 
-                    titleState === 'returning' ? { type: "spring", bounce: 0.5, duration: 1 + Math.random() * 0.5 } : 
-                    { type: "spring", bounce: 0.6 }
-                  }
-                  style={{ display: 'inline-block', whiteSpace: 'pre' }}
-                >
-                  {char}
-                </motion.span>
-              );
-            })}
+            {config.title.split(' ')[0]}<br />{config.title.split(' ').slice(1).join(' ')}
           </h1>
           <motion.div 
             onClick={handleRocketClick}
@@ -304,19 +288,32 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
           >
             🚀
           </motion.div>
-        </div>
-        <div className="flex flex-row flex-wrap gap-2 md:gap-4 items-center mt-2 md:mt-0">
-          <div className="bg-black text-white px-2 py-1 sm:px-4 sm:py-2 border-2 sm:border-4 border-white -rotate-2 transform text-right sm:text-left">
-            <p className="text-[10px] sm:text-xs font-bold text-[#ffea00] uppercase tracking-widest">AGENT</p>
-            <p className="text-sm sm:text-xl font-black uppercase">{currentUser}</p>
           </div>
-          <div className="border-2 sm:border-4 border-black bg-white p-1 sm:p-3 rotate-1 flex sm:block items-center gap-2">
+        </div>
+        <div className="flex flex-row flex-wrap gap-2 md:gap-4 items-start mt-2 md:mt-0">
+          <div className="flex flex-col items-center sm:items-start gap-1">
+            <div className="bg-black text-white px-2 py-1 sm:px-4 sm:py-2 border-2 sm:border-4 border-white -rotate-2 transform text-center sm:text-left w-full">
+              <p className="text-[10px] sm:text-xs font-bold text-[#ffea00] uppercase tracking-widest">AGENT</p>
+              <p className="text-sm sm:text-xl font-black uppercase">{currentUser}</p>
+            </div>
+            <button 
+              onClick={() => {
+                if (window.confirm("Are you sure you want to switch users?")) {
+                  logout();
+                }
+              }}
+              className="text-[10px] font-bold uppercase bg-white border-2 border-black px-2 py-1 hover:bg-gray-200"
+            >
+              Switch User
+            </button>
+          </div>
+          <div className="border-2 sm:border-4 border-black bg-white p-1 sm:p-3 rotate-1 flex sm:block items-center gap-2 h-full">
             <p className="text-[10px] sm:text-xs font-bold uppercase">XP</p>
             <p className="text-sm sm:text-2xl font-black">{xp.toLocaleString()}</p>
           </div>
           <div 
             onClick={handleRankClick}
-            className="border-2 sm:border-4 border-black bg-[#ff00ff] p-1 sm:p-3 -rotate-1 text-white cursor-pointer select-none hover:scale-105 active:scale-95 transition-transform flex sm:block items-center gap-2"
+            className="border-2 sm:border-4 border-black bg-[#ff00ff] p-1 sm:p-3 -rotate-1 text-white cursor-pointer select-none hover:scale-105 active:scale-95 transition-transform flex sm:block items-center gap-2 h-full"
           >
             <p className="text-[10px] sm:text-xs font-bold uppercase">Rank</p>
             <p className="text-sm sm:text-2xl font-black">{rank}</p>
@@ -339,17 +336,33 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
 
             <button 
               onClick={() => setMode('random')}
-              className="group relative bg-white border-4 border-black p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
+              className="group relative bg-white border-4 border-black p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left overflow-hidden"
             >
-              <div className="absolute -top-3 -left-3 bg-[#00ffff] border-2 border-black px-2 text-sm font-bold text-black">02</div>
+              <div className="absolute -top-3 -left-3 bg-[#00ffff] border-2 border-black px-2 text-sm font-bold text-black z-10">02</div>
               {randomHighScore > 0 && (
-                <div className="absolute -top-4 -right-3 bg-[#ffea00] border-2 border-black px-2 py-1 text-xs font-black transform rotate-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase">
+                <div className="absolute -top-4 -right-3 bg-[#ffea00] border-2 border-black px-2 py-1 text-xs font-black transform rotate-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase z-10">
                   BEST: {randomHighScore} XP
                 </div>
               )}
-              <h2 className="text-3xl font-black mb-2 uppercase text-black">Random</h2>
-              <p className="text-sm leading-tight text-black">Total chaos! Numbers flying everywhere. Can you keep up with the madness?</p>
-              <div className="text-4xl self-end mt-4 text-[#ff0000] animate-pulse">💥</div>
+              
+              <div className="absolute top-10 -left-8 md:-left-16 text-[#00ff00] pointer-events-none">
+                {config.skills.slice(0, 10).map((skill, i) => (
+                  <div key={`left_${i}`} className={`text-[${10 + i*2}px] md:text-[${14 + i*4}px] font-black opacity-${Math.max(10, 50 - i*5)} mb-1 md:mb-2 transform ${i%2===0?'rotate-2':'-rotate-2'} select-none`}>
+                    {skill.label}
+                  </div>
+                ))}
+              </div>
+              <div className="absolute top-10 -right-8 md:-right-16 text-[#ff00ff] pointer-events-none">
+                {config.skills.slice(0, 10).map((skill, i) => (
+                  <div key={`right_${i}`} className={`text-[${10 + i*2}px] md:text-[${14 + i*4}px] font-black opacity-${Math.max(10, 50 - i*5)} mb-1 md:mb-2 transform ${i%2===0?'-rotate-2':'rotate-2'} select-none`}>
+                    {skill.label}
+                  </div>
+                ))}
+              </div>
+
+              <h2 className={`text-3xl font-black mb-2 uppercase ${config.theme.primaryText} relative z-10`}>Random</h2>
+              <p className={`text-sm leading-tight ${config.theme.primaryText} relative z-10`}>Total chaos! Can you keep up with the madness?</p>
+              <div className="text-4xl self-end mt-4 text-[#ff0000] animate-pulse relative z-10">💥</div>
             </button>
 
             <button 
@@ -372,8 +385,8 @@ export const Home: React.FC<HomeProps> = ({ setMode }) => {
               className="group relative bg-white border-4 border-black p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
             >
               <div className="absolute -top-3 -left-3 bg-[#ffff00] border-2 border-black px-2 text-sm font-bold text-black">TIPS</div>
-              <h2 className="text-3xl font-black mb-2 uppercase text-black">Brain Hacks</h2>
-              <p className="text-sm leading-tight text-black">Visual shortcuts, the 'Rule of 9s', and secret ways to never fail again.</p>
+              <h2 className={`text-3xl font-black mb-2 uppercase ${config.theme.primaryText}`}>Brain Hacks</h2>
+              <p className={`text-sm leading-tight ${config.theme.primaryText}`}>Visual shortcuts, the 'Rule of 9s', and secret ways to never fail again.</p>
               <div className="text-4xl self-end mt-4">🧠</div>
             </button>
           </div>

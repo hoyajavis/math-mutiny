@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { GameMode, Question } from '../../../shared/types';
-import { generateDivisionSequential, generateDivisionRandom, generateDivisionChallengeFSRS } from '../../../shared/utils/math';
-import { triggerEffect } from '../../../shared/utils/effects';
-import { sarcasm } from '../../../shared/data/sarcasm';
-import { playSuccessSound, playFailSound, playLaserSound, playExplosionSound } from '../../../shared/utils/audio';
-import { useXP } from '../../../shared/hooks/useXP';
-import { useHighScores } from '../../../shared/hooks/useHighScores';
-import { useFSRS } from '../../../shared/hooks/useFSRS';
+import { GameMode, Question } from '../types';
+import { generateSequential, generateRandom, generateChallengeFSRS } from '../utils/math';
+import { triggerEffect } from '../utils/effects';
+import { sarcasm } from '../data/sarcasm';
+import { playSuccessSound, playFailSound, playLaserSound, playExplosionSound } from '../utils/audio';
+import { useXP } from '../hooks/useXP';
+import { useHighScores } from '../hooks/useHighScores';
+import { useFSRS } from '../hooks/useFSRS';
 
 const BOSSES = [
   { 
@@ -77,7 +77,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
       const loadStabilities = async () => {
         const newStabilities: Record<number, number> = {};
         for (let i = 1; i <= 12; i++) {
-          newStabilities[i] = await getGroupStability(id => id.endsWith('_' + i));
+          newStabilities[i] = await getGroupStability(id => id.endsWith('x' + i) || id.startsWith(i + 'x'));
         }
         setTableStabilities(newStabilities);
       };
@@ -225,7 +225,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
   // Setup game
   useEffect(() => {
     if (mode === 'random') {
-      setQuestions(generateDivisionRandom(15));
+      setQuestions(generateRandom(15));
       setBotMessage("Show me what you got, human.");
       setQuestionStartTime(Date.now());
     } else if (mode === 'challenge') {
@@ -235,7 +235,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
           acc[c.factId] = c.card;
           return acc;
         }, {} as Record<string, import('ts-fsrs').Card>);
-        setQuestions(generateDivisionChallengeFSRS(100, cardsRecord)); // Lots of questions for challenge
+        setQuestions(generateChallengeFSRS(100, cardsRecord)); // Lots of questions for challenge
         setTimeLeft(60);
         setBossHp(20);
         setBossDefeated(false);
@@ -251,7 +251,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
 
   // Handle table selection for sequential
   const handleStartSequential = (table: number) => {
-    setQuestions(generateDivisionSequential(table));
+    setQuestions(generateSequential(table));
     setTableSelect(table);
     setQuestionStartTime(Date.now());
   };
@@ -340,7 +340,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
           return newHp;
         });
       } else {
-        setBotMessage(sarcasm.divisionCorrect[Math.floor(Math.random() * sarcasm.divisionCorrect.length)]);
+        setBotMessage(sarcasm.correct[Math.floor(Math.random() * sarcasm.correct.length)]);
       }
       
       setScore(s => s + 1);
@@ -394,7 +394,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
           return newT;
         });
       } else {
-        setBotMessage(sarcasm.divisionIncorrect[Math.floor(Math.random() * sarcasm.divisionIncorrect.length)]);
+        setBotMessage(sarcasm.incorrect[Math.floor(Math.random() * sarcasm.incorrect.length)]);
       }
       
       setStreak(0);
@@ -419,10 +419,10 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
     return (
       <div className="flex flex-col min-h-screen p-6">
         <header className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-black text-cyan-950 uppercase tracking-tighter transform rotate-1 border-4 border-cyan-950 bg-[#0284c7] px-4 py-2 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <h1 className="text-4xl font-black text-black uppercase tracking-tighter transform rotate-1 border-4 border-black bg-[#00ffff] px-4 py-2 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             Pick a Table
           </h1>
-          <button onClick={() => setMode('home')} className="doodle-button px-4 py-2 font-black uppercase text-xl text-cyan-950">← Abort</button>
+          <button onClick={() => setMode('home')} className="doodle-button px-4 py-2 font-black uppercase text-xl text-black">← Abort</button>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center relative">
           <div className="grid grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-3xl">
@@ -436,7 +436,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
                   key={num}
                   onClick={() => handleStartSequential(num)}
                   style={{ backgroundColor: bgColor }}
-                  className={`border-4 border-cyan-950 py-6 md:py-8 text-3xl md:text-4xl font-black text-cyan-950 hover:-translate-y-2 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] doodle-button`}
+                  className={`border-4 border-black py-6 md:py-8 text-3xl md:text-4xl font-black text-black hover:-translate-y-2 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] doodle-button`}
                 >
                   {num}
                 </button>
@@ -444,10 +444,10 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
             })}
           </div>
 
-          <div className="mt-8 md:mt-12 w-full max-w-xl bg-cyan-50 border-4 border-cyan-950 p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
+          <div className="mt-8 md:mt-12 w-full max-w-xl bg-white border-4 border-black p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
             <h3 className="font-black uppercase text-center mb-2">Mastery Index</h3>
-            <div className="h-6 w-full border-2 border-cyan-950 shadow-inner relative overflow-hidden" style={{ background: 'linear-gradient(to right, hsl(0, 100%, 60%), hsl(60, 100%, 60%), hsl(120, 100%, 60%))' }}>
-              <div className="absolute inset-0 bg-cyan-50/20 pointer-events-none"></div>
+            <div className="h-6 w-full border-2 border-black shadow-inner relative overflow-hidden" style={{ background: 'linear-gradient(to right, hsl(0, 100%, 60%), hsl(60, 100%, 60%), hsl(120, 100%, 60%))' }}>
+              <div className="absolute inset-0 bg-white/20 pointer-events-none"></div>
             </div>
             <div className="flex justify-between mt-2 font-bold uppercase text-sm">
               <span>NOOB</span>
@@ -471,7 +471,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className={`border-4 border-cyan-950 p-12 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] text-center text-cyan-50 ${mode === 'challenge' && !bossDefeated ? 'bg-cyan-950' : 'bg-[#14b8a6]'}`}
+          className={`border-4 border-black p-12 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] text-center text-white ${mode === 'challenge' && !bossDefeated ? 'bg-black' : 'bg-[#ff00ff]'}`}
         >
           <div className="text-8xl mb-6">
             {mode === 'challenge' ? (bossDefeated ? "🏆" : "💀") : "🌟"}
@@ -484,19 +484,19 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
               initial={{ scale: 0 }}
               animate={{ scale: [1.2, 1] }}
               transition={{ type: "spring", bounce: 0.6 }}
-              className="text-2xl font-black uppercase mb-6 bg-[#ffff00] text-cyan-950 border-4 border-cyan-950 p-2 inline-block transform rotate-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse"
+              className="text-2xl font-black uppercase mb-6 bg-[#ffff00] text-black border-4 border-black p-2 inline-block transform rotate-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse"
             >
               NEW RECORD! 🎉
             </motion.div>
           )}
-          <div className="text-4xl font-bold mb-4 bg-cyan-950 p-4 inline-block transform rotate-1">
-            Score: <span className="text-[#0284c7]">{score}</span>
+          <div className="text-4xl font-bold mb-4 bg-black p-4 inline-block transform rotate-1">
+            Score: <span className="text-[#00ffff]">{score}</span>
           </div>
-          <div className="text-2xl font-bold mb-10 bg-cyan-50 text-cyan-950 border-4 border-cyan-950 p-2 inline-block transform -rotate-1">
+          <div className="text-2xl font-bold mb-10 bg-white text-black border-4 border-black p-2 inline-block transform -rotate-1">
             + {xpEarned} XP
           </div>
           <div className="flex gap-6 justify-center">
-            <button onClick={() => setMode('home')} className="doodle-button px-8 py-4 text-2xl font-black text-cyan-950 uppercase">Menu</button>
+            <button onClick={() => setMode('home')} className="doodle-button px-8 py-4 text-2xl font-black text-black uppercase">Menu</button>
             <button onClick={async () => {
               setScore(0);
               setStreak(0);
@@ -507,14 +507,14 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
               setBotMessage("Let's try not to embarrass ourselves this time.");
               setQuestionStartTime(Date.now());
               if (mode === 'sequential') setTableSelect(null);
-              else if (mode === 'random') setQuestions(generateDivisionRandom(15));
+              else if (mode === 'random') setQuestions(generateRandom(15));
               else if (mode === 'challenge') { 
                 const cardsArray = await getAllCards();
                 const cardsRecord = cardsArray.reduce((acc, c) => {
                   acc[c.factId] = c.card;
                   return acc;
                 }, {} as Record<string, import('ts-fsrs').Card>);
-                setQuestions(generateDivisionChallengeFSRS(100, cardsRecord)); 
+                setQuestions(generateChallengeFSRS(100, cardsRecord)); 
                 setTimeLeft(60); 
                 setBossHp(20); 
                 setBossDefeated(false); 
@@ -523,7 +523,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
                 setBossMessage(boss.taunts[Math.floor(Math.random() * boss.taunts.length)]);
                 setBotMessage("I'm in your corner! Let's take this guy down!");
               }
-            }} className="doodle-button px-8 py-4 text-2xl font-black bg-[#0891b2] text-cyan-950 uppercase">Play Again</button>
+            }} className="doodle-button px-8 py-4 text-2xl font-black bg-[#ffea00] text-black uppercase">Play Again</button>
           </div>
         </motion.div>
       </div>
@@ -532,16 +532,16 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
 
   const currentQ = questions[currentIndex];
   
-  let headerColor = "bg-[#0891b2]";
+  let headerColor = "bg-[#ffea00]";
   let headerStyle = {};
-  if (mode === 'random') headerColor = "bg-[#0284c7]";
+  if (mode === 'random') headerColor = "bg-[#00ffff]";
   if (mode === 'challenge') {
-    headerColor = "text-cyan-50";
+    headerColor = "text-white";
     headerStyle = { backgroundColor: currentBoss.color };
   }
 
   return (
-    <div className={`flex flex-col min-h-screen p-4 md:p-6 lg:p-4 transition-colors duration-300 ${mode === 'challenge' ? `${currentBoss.bgColorClass} text-cyan-50` : ''} ${isShaking ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
+    <div className={`flex flex-col min-h-screen p-4 md:p-6 lg:p-4 transition-colors duration-300 ${mode === 'challenge' ? `${currentBoss.bgColorClass} text-white` : ''} ${isShaking ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
       {zeroCeleb && (
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
           <motion.div
@@ -549,7 +549,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
             animate={{ scale: [0, 1.5, 1], rotate: 0 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", bounce: 0.7 }}
-            className="text-6xl md:text-9xl font-black text-[#ff0000] drop-shadow-[10px_10px_0px_rgba(255,255,0,1)] uppercase transform -rotate-12 bg-cyan-950 px-8 py-4 border-8 border-cyan-50"
+            className="text-6xl md:text-9xl font-black text-[#ff0000] drop-shadow-[10px_10px_0px_rgba(255,255,0,1)] uppercase transform -rotate-12 bg-black px-8 py-4 border-8 border-white"
           >
             ZERO ANNIHILATION!
           </motion.div>
@@ -560,7 +560,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
       )}
       <header className="flex justify-between items-center mb-2 lg:mb-4 gap-4 flex-wrap">
         <div 
-          className={`border-4 border-cyan-950 px-4 py-2 text-2xl font-black uppercase transform -rotate-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${headerColor}`}
+          className={`border-4 border-black px-4 py-2 text-2xl font-black uppercase transform -rotate-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${headerColor}`}
           style={headerStyle}
         >
           {mode} MODE
@@ -568,33 +568,33 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
         
         <div className="flex gap-4 items-center flex-1 justify-center">
           {mode === 'challenge' ? (
-            <div className="w-48 md:w-64 border-4 border-cyan-950 bg-cyan-50 h-10 relative shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="w-48 md:w-64 border-4 border-black bg-white h-10 relative shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <div 
                 className="absolute top-0 left-0 h-full transition-all duration-300"
                 style={{ width: `${(bossHp / 20) * 100}%`, backgroundColor: currentBoss.color }}
               />
-              <div className="absolute inset-0 flex items-center justify-center font-black text-sm z-10 mix-blend-difference text-cyan-50">
+              <div className="absolute inset-0 flex items-center justify-center font-black text-sm z-10 mix-blend-difference text-white">
                 BOSS HP: {bossHp}/20
               </div>
             </div>
           ) : (
-            <div className="border-4 border-cyan-950 bg-cyan-50 text-cyan-950 px-4 py-2 font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="border-4 border-black bg-white text-black px-4 py-2 font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               SCORE: {score}
             </div>
           )}
           {streak > 2 && (
-            <div className="border-4 border-cyan-950 bg-[#0891b2] px-4 py-2 font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-cyan-950">
+            <div className="border-4 border-black bg-[#ffea00] px-4 py-2 font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
               🔥 STREAK {streak}
             </div>
           )}
           {mode === 'challenge' && (
-            <div className={`border-4 border-cyan-950 px-4 py-2 font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${timeLeft <= 10 ? 'bg-red-500 text-cyan-50 animate-pulse' : 'bg-[#0ea5e9]'}`}>
+            <div className={`border-4 border-black px-4 py-2 font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${timeLeft <= 10 ? 'bg-red-500 text-white animate-pulse' : 'bg-[#00ff00]'}`}>
               ⏱️ {timeLeft}S
             </div>
           )}
         </div>
 
-        <button onClick={() => setMode('home')} className="doodle-button px-4 py-2 font-black uppercase text-xl text-cyan-950">← Abort</button>
+        <button onClick={() => setMode('home')} className="doodle-button px-4 py-2 font-black uppercase text-xl text-black">← Abort</button>
       </header>
 
       <div className="flex-1 flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto w-full gap-2 lg:gap-4">
@@ -606,15 +606,15 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
               key={botMessage}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-cyan-50 text-cyan-950 border-4 border-cyan-950 p-3 md:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative mb-4 transform rotate-2 w-full max-w-sm"
+              className="bg-white text-black border-4 border-black p-3 md:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative mb-4 transform rotate-2 w-full max-w-sm"
             >
               <p className="font-bold text-lg leading-tight text-center">{botMessage}</p>
-              <div className="absolute -bottom-4 right-1/2 ml-2 w-4 h-4 bg-cyan-50 border-r-4 border-b-4 border-cyan-950 rotate-45"></div>
+              <div className="absolute -bottom-4 right-1/2 ml-2 w-4 h-4 bg-white border-r-4 border-b-4 border-black rotate-45"></div>
             </motion.div>
             <div className={`text-6xl md:text-7xl animate-bounce drop-shadow-xl cursor-pointer select-none`} onClick={handleBotClick}>
               🤖
             </div>
-            <div className="text-center font-black uppercase tracking-widest text-cyan-50 bg-cyan-950 px-3 py-1 mt-4 transform -rotate-1">
+            <div className="text-center font-black uppercase tracking-widest text-white bg-black px-3 py-1 mt-4 transform -rotate-1">
               Math-Bot Coach
             </div>
           </div>
@@ -623,12 +623,12 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
         {/* Quiz Area */}
         <div className="flex-1 w-full flex flex-col items-center justify-center max-w-3xl">
           {mode !== 'challenge' && (
-            <div className="text-2xl font-black mb-4 bg-cyan-950 text-cyan-50 px-4 py-1 border-4 border-cyan-950 transform rotate-1">
+            <div className="text-2xl font-black mb-4 bg-black text-white px-4 py-1 border-4 border-black transform rotate-1">
               QUESTION {currentIndex + 1} / {questions.length}
             </div>
           )}
           
-          <div className="border-4 border-cyan-950 p-4 md:p-8 w-full bg-cyan-50 text-cyan-950 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+          <div className="border-4 border-black p-4 md:p-8 w-full bg-white text-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
@@ -639,10 +639,10 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
                 className="flex flex-col items-center"
               >
                 <div className="font-black text-5xl md:text-6xl lg:text-7xl mb-6 flex items-center justify-center gap-2 md:gap-4 w-full text-center">
-                  <span className="border-b-8 border-cyan-950 pb-1 px-2 md:px-4 text-[#14b8a6] drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">{currentQ?.a}</span>
-                  <span className="text-4xl text-cyan-950">÷</span>
-                  <span className="border-b-8 border-cyan-950 pb-1 px-2 md:px-4 text-[#0ea5e9] drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">{currentQ?.b}</span>
-                  <span className="text-4xl text-cyan-950">=</span>
+                  <span className="border-b-8 border-black pb-1 px-2 md:px-4 text-[#ff00ff] drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">{currentQ?.a}</span>
+                  <span className="text-4xl text-black">x</span>
+                  <span className="border-b-8 border-black pb-1 px-2 md:px-4 text-[#00ff00] drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">{currentQ?.b}</span>
+                  <span className="text-4xl text-black">=</span>
                 </div>
 
                 <form onSubmit={handleSubmit} className="w-full max-w-xs relative">
@@ -657,7 +657,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
                         setInput(val);
                       }
                     }}
-                    className="w-full text-center text-4xl md:text-5xl font-black p-2 md:p-4 border-[6px] border-cyan-950 outline-none bg-[#0891b2] text-cyan-950 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] focus:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] focus:translate-y-[-2px] focus:translate-x-[-2px] transition-all uppercase"
+                    className="w-full text-center text-4xl md:text-5xl font-black p-2 md:p-4 border-[6px] border-black outline-none bg-[#ffea00] text-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] focus:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] focus:translate-y-[-2px] focus:translate-x-[-2px] transition-all uppercase"
                     placeholder="?"
                     autoFocus
                   />
@@ -674,8 +674,8 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
                   type="button"
                   onClick={() => handleNumpadClick(btn.toString())}
                   className={`doodle-button font-black text-xl md:text-2xl py-2 flex items-center justify-center
-                    ${btn === 'ENTER' ? 'bg-[#0ea5e9] text-cyan-950 col-span-1 text-sm md:text-lg' : 
-                      btn === 'C' ? 'bg-[#14b8a6] text-cyan-50' : 'bg-cyan-50 text-cyan-950'}
+                    ${btn === 'ENTER' ? 'bg-[#00ff00] text-black col-span-1 text-sm md:text-lg' : 
+                      btn === 'C' ? 'bg-[#ff00ff] text-white' : 'bg-white text-black'}
                   `}
                 >
                   {btn === 'ENTER' ? '↵' : btn}
@@ -691,10 +691,10 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
             key={mode === 'challenge' ? bossMessage : botMessage}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-cyan-50 text-cyan-950 border-4 border-cyan-950 p-3 md:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative mb-4 transform -rotate-2 w-full max-w-sm"
+            className="bg-white text-black border-4 border-black p-3 md:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative mb-4 transform -rotate-2 w-full max-w-sm"
           >
             <p className="font-bold text-lg leading-tight text-center">{mode === 'challenge' ? bossMessage : botMessage}</p>
-            <div className="absolute -bottom-4 left-1/2 -ml-2 w-4 h-4 bg-cyan-50 border-r-4 border-b-4 border-cyan-950 rotate-45"></div>
+            <div className="absolute -bottom-4 left-1/2 -ml-2 w-4 h-4 bg-white border-r-4 border-b-4 border-black rotate-45"></div>
           </motion.div>
           <div 
             className={`text-6xl md:text-7xl ${mode === 'challenge' ? 'animate-pulse' : 'animate-bounce'} drop-shadow-xl cursor-pointer select-none`} 
@@ -706,7 +706,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode }) => {
             {mode === 'challenge' ? currentBoss.emoji : '🤖'}
           </div>
           <div 
-            className={`text-center font-black uppercase tracking-widest text-cyan-50 px-3 py-1 mt-4 transform rotate-1 ${mode !== 'challenge' ? 'bg-cyan-950' : ''}`}
+            className={`text-center font-black uppercase tracking-widest text-white px-3 py-1 mt-4 transform rotate-1 ${mode !== 'challenge' ? 'bg-black' : ''}`}
             style={mode === 'challenge' ? { backgroundColor: currentBoss.color } : {}}
           >
             {mode === 'challenge' ? currentBoss.name : 'Math-Bot 9000'}

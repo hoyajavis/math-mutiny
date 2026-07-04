@@ -1,37 +1,63 @@
 import React from 'react';
+import { motion } from 'motion/react';
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-8">
-      <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 mb-12">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 text-black relative overflow-hidden">
+      <motion.h1 
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", bounce: 0.6 }}
+        className="text-6xl md:text-8xl font-black uppercase tracking-tighter mb-16 border-8 border-black bg-[#ffff00] px-8 py-4 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] transform -rotate-2 hover:rotate-0 hover:scale-105 transition-all text-center cursor-default z-10"
+      >
         Math Mutiny
-      </h1>
+      </motion.h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl w-full">
-        <a 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 max-w-6xl w-full z-10 px-4">
+        
+        {/* Multiplication */}
+        <motion.a 
+          whileHover={{ scale: 1.05, rotate: 2 }}
+          whileTap={{ scale: 0.95 }}
           href="/math-mutiny/multiplication.html" 
-          className="group block p-8 bg-gray-900 border border-gray-800 rounded-2xl hover:border-blue-500 hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all"
+          className="doodle-button flex flex-col items-center p-8 bg-yellow-400 text-center relative group"
         >
-          <h2 className="text-2xl font-bold mb-4 text-blue-400 group-hover:text-blue-300">Multiplication</h2>
-          <p className="text-gray-400">Master your times tables with spaced repetition.</p>
-        </a>
+          <div className="text-8xl mb-6">✖️</div>
+          <h2 className="text-3xl md:text-4xl font-black uppercase mb-4 tracking-widest bg-white border-4 border-black px-4 py-2 transform -rotate-1 group-hover:rotate-1 transition-transform">Multiplication</h2>
+          <p className="text-xl font-bold bg-black text-white p-2">Master your times tables.</p>
+        </motion.a>
 
-        <a 
+        {/* Division */}
+        <motion.a 
+          whileHover={{ scale: 1.05, rotate: -2 }}
+          whileTap={{ scale: 0.95 }}
           href="/math-mutiny/division.html" 
-          className="group block p-8 bg-gray-900 border border-gray-800 rounded-2xl hover:border-purple-500 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)] transition-all"
+          className="doodle-button flex flex-col items-center p-8 bg-cyan-400 text-center relative group"
         >
-          <h2 className="text-2xl font-bold mb-4 text-purple-400 group-hover:text-purple-300">Division</h2>
-          <p className="text-gray-400">Learn inverse operations and division facts.</p>
-        </a>
+          <div className="text-8xl mb-6">➗</div>
+          <h2 className="text-3xl md:text-4xl font-black uppercase mb-4 tracking-widest bg-white border-4 border-black px-4 py-2 transform rotate-1 group-hover:-rotate-1 transition-transform">Division</h2>
+          <p className="text-xl font-bold bg-black text-white p-2">Learn inverse operations.</p>
+        </motion.a>
 
-        <a 
+        {/* Fractions */}
+        <motion.a 
+          whileHover={{ scale: 1.05, rotate: 2 }}
+          whileTap={{ scale: 0.95 }}
           href="/math-mutiny/fractions.html" 
-          className="group block p-8 bg-gray-900 border border-gray-800 rounded-2xl hover:border-emerald-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all"
+          className="doodle-button flex flex-col items-center p-8 bg-purple-400 text-center relative group"
         >
-          <h2 className="text-2xl font-bold mb-4 text-emerald-400 group-hover:text-emerald-300">Fractions</h2>
-          <p className="text-gray-400">Add, subtract, and multiply fractions like a pro.</p>
-        </a>
+          <div className="text-8xl mb-6">🍕</div>
+          <h2 className="text-3xl md:text-4xl font-black uppercase mb-4 tracking-widest bg-white border-4 border-black px-4 py-2 transform -rotate-1 group-hover:rotate-1 transition-transform">Fractions</h2>
+          <p className="text-xl font-bold bg-black text-white p-2">Master the slices.</p>
+        </motion.a>
+
       </div>
+
+      {/* Decorative background elements */}
+      <div className="fixed top-20 left-10 text-6xl opacity-20 transform -rotate-45 font-black pointer-events-none z-0">x = y²</div>
+      <div className="fixed bottom-20 right-10 text-8xl opacity-20 transform rotate-12 font-black pointer-events-none z-0">3/4</div>
+      <div className="fixed top-40 right-20 text-7xl opacity-20 font-black pointer-events-none z-0">÷</div>
+      <div className="fixed bottom-40 left-20 text-9xl opacity-20 font-black pointer-events-none z-0">=</div>
     </div>
   );
 }

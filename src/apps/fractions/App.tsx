@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Home } from './components/Home';
-import { LearningMode } from './components/LearningMode';
-import { QuizMode } from './components/QuizMode';
+import { Home } from '../../shared/components/Home';
+import { LearningMode } from '../../shared/components/LearningMode';
+import { QuizMode } from '../../shared/components/QuizMode';
 import { EffectOverlay } from '../../shared/components/EffectOverlay';
 import { FakeConsole } from '../../shared/components/FakeConsole';
 import { GameMode } from '../../shared/types';
 import { UserProvider, useUser } from '../../shared/hooks/useUser';
 import { motion } from 'motion/react';
+import { fractionsConfig } from './config';
 
 function GameApp() {
   const [mode, setMode] = useState<GameMode>('home');
@@ -57,10 +58,10 @@ function GameApp() {
       <EffectOverlay />
       <FakeConsole />
       
-      {mode === 'home' && <Home setMode={setMode} />}
-      {mode === 'learning' && <LearningMode setMode={setMode} />}
+      {mode === 'home' && <Home setMode={setMode} config={fractionsConfig} />}
+      {mode === 'learning' && <LearningMode setMode={setMode} config={fractionsConfig} />}
       {(mode === 'sequential' || mode === 'random' || mode === 'challenge') && (
-        <QuizMode mode={mode} setMode={setMode} />
+        <QuizMode mode={mode} setMode={setMode} config={fractionsConfig} />
       )}
     </div>
   );

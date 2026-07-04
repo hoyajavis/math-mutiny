@@ -8,11 +8,14 @@ export const generateVisualFacts = (count: number): Question[] => {
     const d = Math.floor(Math.random() * 8) + 2; // 2 to 9
     const n = Math.floor(Math.random() * (d - 1)) + 1; // 1 to d-1
     return {
+      type: 'fraction' as const,
       id: `vis_${n}_${d}`,
       fractionType: 'visual',
-      a: n,
-      b: d,
-      answer: `${n}/${d}`
+      a: `${n}/${d}`,
+      b: undefined,
+      answer: `${n}/${d}`,
+      shaded: n,
+      total: d
     };
   });
 };
@@ -31,10 +34,10 @@ export const generateSimplificationFacts = (count: number): Question[] => {
     let finalD = unsimplifiedD / divisor;
 
     return {
+      type: 'fraction' as const,
       id: `simp_${unsimplifiedN}_${unsimplifiedD}`,
       fractionType: 'simplification',
-      a: unsimplifiedN,
-      b: unsimplifiedD,
+      a: `${unsimplifiedN}/${unsimplifiedD}`,
       answer: finalD === 1 ? `${finalN}` : `${finalN}/${finalD}`
     };
   });
@@ -49,10 +52,10 @@ export const generateImproperToMixedFacts = (count: number): Question[] => {
     const improperN = w * d + n;
     
     return {
+      type: 'fraction' as const,
       id: `imp2mix_${improperN}_${d}`,
       fractionType: 'improperToMixed',
-      a: improperN,
-      b: d,
+      a: `${improperN}/${d}`,
       answer: `${w} ${n}/${d}`
     };
   });
@@ -67,6 +70,7 @@ export const generateMixedToImproperFacts = (count: number): Question[] => {
     const improperN = w * d + n;
     
     return {
+      type: 'fraction' as const,
       id: `mix2imp_${w}_${n}_${d}`,
       fractionType: 'mixedToImproper',
       a: `${w} ${n}/${d}`,
@@ -82,10 +86,10 @@ export const generateDecimalFacts = (count: number): Question[] => {
     const n = Math.floor(Math.random() * (d - 1)) + 1; // 1 to d-1
     
     return {
+      type: 'fraction' as const,
       id: `dec_${n}_${d}`,
       fractionType: 'decimal',
-      a: n,
-      b: d,
+      a: `${n}/${d}`,
       answer: (n / d).toString()
     };
   });
