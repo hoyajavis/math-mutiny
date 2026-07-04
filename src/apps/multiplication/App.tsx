@@ -56,7 +56,7 @@ function GameApp() {
   return (
     <div className="min-h-screen relative">
       <EffectOverlay />
-      <FakeConsole />
+      <FakeConsole appId={multiplicationConfig.appId} />
       
       {mode === 'home' && <Home setMode={setMode} config={multiplicationConfig} />}
       {mode === 'learning' && <LearningMode setMode={setMode} config={multiplicationConfig} />}

@@ -6,9 +6,9 @@ import { useHighScores } from '../hooks/useHighScores';
 
 import { useUser } from '../hooks/useUser';
 
-export const FakeConsole = () => {
+export const FakeConsole = ({ appId }: { appId: string }) => {
   const { resetXP } = useXP();
-  const { resetHighScores } = useHighScores();
+  const { resetHighScores } = useHighScores(appId);
 
   const { currentUser, login, logout } = useUser();
 

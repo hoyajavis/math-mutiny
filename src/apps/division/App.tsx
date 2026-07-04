@@ -56,7 +56,7 @@ function GameApp() {
   return (
     <div className="min-h-screen relative">
       <EffectOverlay />
-      <FakeConsole />
+      <FakeConsole appId={divisionConfig.appId} />
       
       {mode === 'home' && <Home setMode={setMode} config={divisionConfig} />}
       {mode === 'learning' && <LearningMode setMode={setMode} config={divisionConfig} />}

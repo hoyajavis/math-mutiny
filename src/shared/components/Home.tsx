@@ -15,7 +15,7 @@ interface HomeProps {
 
 export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
   const { xp, rank, addXp } = useXP();
-  const { randomHighScore, challengeHighScore } = useHighScores();
+  const { randomHighScore, challengeHighScore } = useHighScores(config.appId);
   const { currentUser, logout } = useUser();
   const [botMsg, setBotMsg] = useState('"Welcome to Math Mutiny. Prepare to have your ego destroyed by numbers."');
   const [botPokeStage, setBotPokeStage] = useState(0);
@@ -28,11 +28,28 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
   const handleRunawayHover = () => {
     const maxX = window.innerWidth - 150;
     const maxY = window.innerHeight - 50;
-    // absolute position instead of offset might be easier, but let's just do wild offsets
     const newX = (Math.random() - 0.5) * 600;
     const newY = (Math.random() - 0.5) * 600;
     setRunawayPos({ x: newX, y: newY });
   };
+
+  const getSequentialDesc = () => {
+    if (config.appId === 'division') return "Climb the ladder from ÷1 to ÷12. No shortcuts, just pure division muscle!";
+    if (config.appId === 'fractions') return "Work through the core fraction skills step-by-step!";
+    return "Climb the ladder from 1 to 12. No shortcuts, just pure multiplication muscle!";
+  };
+
+  const getBossDesc = () => {
+    return "Face off against 5 terrifying math monsters! Coach Math-Bot is in your corner!";
+  };
+
+  const getTipsDesc = () => {
+    if (config.appId === 'division') return "Tricks to slice through numbers and divisibility rules.";
+    if (config.appId === 'fractions') return "Visualizing slices, simplifying tricks, and decimal conversions.";
+    return "Visual shortcuts, the 'Rule of 9s', and secret ways to never fail again.";
+  };
+
+  const randomDecorations = ['+', '-', '×', '÷', '?', '!', '%', '=', '≠', '≈'];
 
   // Idle mode timer
   useEffect(() => {
@@ -330,13 +347,13 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
             >
               <div className="absolute -top-3 -left-3 bg-[#00ff00] border-2 border-black px-2 text-sm font-bold text-black">01</div>
               <h2 className="text-3xl font-black mb-2 uppercase text-black">Sequential</h2>
-              <p className="text-sm leading-tight text-black">Climb the ladder from 1 to 12. No shortcuts, just pure multiplication muscle!</p>
+              <p className="text-sm leading-tight text-black">{getSequentialDesc()}</p>
               <div className="text-4xl self-end mt-4">🪜</div>
             </button>
 
             <button 
               onClick={() => setMode('random')}
-              className="group relative bg-white border-4 border-black p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left overflow-hidden"
+              className="group relative bg-white border-4 border-black p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
             >
               <div className="absolute -top-3 -left-3 bg-[#00ffff] border-2 border-black px-2 text-sm font-bold text-black z-10">02</div>
               {randomHighScore > 0 && (
@@ -346,16 +363,16 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
               )}
               
               <div className="absolute top-10 -left-8 md:-left-16 text-[#00ff00] pointer-events-none">
-                {config.skills.slice(0, 10).map((skill, i) => (
+                {randomDecorations.map((symbol, i) => (
                   <div key={`left_${i}`} className={`text-[${10 + i*2}px] md:text-[${14 + i*4}px] font-black opacity-${Math.max(10, 50 - i*5)} mb-1 md:mb-2 transform ${i%2===0?'rotate-2':'-rotate-2'} select-none`}>
-                    {skill.label}
+                    {symbol}
                   </div>
                 ))}
               </div>
               <div className="absolute top-10 -right-8 md:-right-16 text-[#ff00ff] pointer-events-none">
-                {config.skills.slice(0, 10).map((skill, i) => (
+                {randomDecorations.slice().reverse().map((symbol, i) => (
                   <div key={`right_${i}`} className={`text-[${10 + i*2}px] md:text-[${14 + i*4}px] font-black opacity-${Math.max(10, 50 - i*5)} mb-1 md:mb-2 transform ${i%2===0?'-rotate-2':'rotate-2'} select-none`}>
-                    {skill.label}
+                    {symbol}
                   </div>
                 ))}
               </div>
@@ -376,7 +393,7 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
                 </div>
               )}
               <h2 className="text-3xl font-black mb-2 text-white italic uppercase">Boss Fight</h2>
-              <p className="text-sm leading-tight text-gray-300">Face off against 5 terrifying math monsters! Coach Math-Bot is in your corner!</p>
+              <p className="text-sm leading-tight text-gray-300">{getBossDesc()}</p>
               <div className="text-4xl self-end mt-4">👹</div>
             </button>
 
@@ -386,7 +403,7 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
             >
               <div className="absolute -top-3 -left-3 bg-[#ffff00] border-2 border-black px-2 text-sm font-bold text-black">TIPS</div>
               <h2 className={`text-3xl font-black mb-2 uppercase ${config.theme.primaryText}`}>Brain Hacks</h2>
-              <p className={`text-sm leading-tight ${config.theme.primaryText}`}>Visual shortcuts, the 'Rule of 9s', and secret ways to never fail again.</p>
+              <p className={`text-sm leading-tight ${config.theme.primaryText}`}>{getTipsDesc()}</p>
               <div className="text-4xl self-end mt-4">🧠</div>
             </button>
           </div>

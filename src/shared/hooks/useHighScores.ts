@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useUser } from './useUser';
 
-export const useHighScores = () => {
+export const useHighScores = (appId: string) => {
   const { currentUser } = useUser();
   const [randomHighScore, setRandomHighScore] = useState(0);
   const [challengeHighScore, setChallengeHighScore] = useState(0);
 
-  const getRandomKey = () => `math_mutiny_random_high_${currentUser}`;
-  const getChallengeKey = () => `math_mutiny_challenge_high_${currentUser}`;
+  const getRandomKey = () => `math_mutiny_${appId}_random_high_${currentUser}`;
+  const getChallengeKey = () => `math_mutiny_${appId}_challenge_high_${currentUser}`;
 
   useEffect(() => {
     if (!currentUser) return;

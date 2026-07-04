@@ -23,7 +23,7 @@ interface QuizModeProps {
 export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => {
   const { addXp } = useXP();
   const { recordAttempt, getAllCards } = useFSRS();
-  const { recordRandomScore, recordChallengeScore } = useHighScores();
+  const { recordRandomScore, recordChallengeScore } = useHighScores(config.appId);
 
   const gameState = useGameState(mode, config);
   const {
