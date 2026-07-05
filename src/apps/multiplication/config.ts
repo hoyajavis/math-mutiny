@@ -1,6 +1,6 @@
 import { AppConfig, Question } from '../../shared/types';
 import { generateSequential, generateRandom, generateChallengeFSRS } from '../../shared/utils/math';
-import { BOSSES } from '../../shared/components/QuizMode'; // Temporarily, we will move bosses to config
+// Removed
 import { sarcasm } from '../../shared/data/sarcasm';
 import { tips } from '../../shared/data/tips';
 
