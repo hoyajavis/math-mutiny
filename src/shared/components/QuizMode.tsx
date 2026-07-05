@@ -241,7 +241,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
         }
         setBotMessage("ZERO DESTROYS ALL! MWHAHAHA!");
       } else {
-        setBotMessage(customBotMessage || config.sarcasm.good[Math.floor(Math.random() * config.sarcasm.good.length)]);
+        setBotMessage(customBotMessage || config.sarcasm.correct[Math.floor(Math.random() * config.sarcasm.correct.length)]);
       }
 
       addScore(10 + Math.floor(combo / 5) * 5);
@@ -298,7 +298,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
 
     } else {
       playFailSound();
-      setBotMessage(config.sarcasm.bad[Math.floor(Math.random() * config.sarcasm.bad.length)]);
+      setBotMessage(config.sarcasm.incorrect[Math.floor(Math.random() * config.sarcasm.incorrect.length)]);
       resetStreak();
       resetCombo();
       setIsShaking(true);

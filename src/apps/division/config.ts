@@ -1,5 +1,5 @@
 import { AppConfig, Question } from '../../shared/types';
-import { generateDivisionSequential, generateDivisionRandom, generateChallengeFSRS } from '../../shared/utils/math';
+import { generateDivisionSequential, generateDivisionRandom, generateDivisionChallengeFSRS } from '../../shared/utils/math';
 import { sarcasm } from '../../shared/data/sarcasm';
 import { divisionTips } from '../../shared/data/divisionTips';
 
@@ -27,7 +27,7 @@ export const divisionConfig: AppConfig = {
       return generateDivisionRandom(15);
     }
     if (mode === 'challenge') {
-      return generateChallengeFSRS(100, cardsRecord || {}, 'division');
+      return generateDivisionChallengeFSRS(100, cardsRecord || {});
     }
     return [];
   },
