@@ -279,7 +279,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
             setIsTransitioning(false);
             setQuestionStartTime(Date.now());
           } else {
-            if (mode === 'sequential') {
+            if (mode === 'sequential' || mode === 'random') {
               setIsGameOver(true);
             } else {
               // Generate more questions
