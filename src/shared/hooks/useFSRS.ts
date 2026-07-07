@@ -76,13 +76,15 @@ export const useFSRS = () => {
       lastUpdate: timestamp
     });
 
-    // 6. Prune old logs (optional, e.g., older than 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    await db.attemptLogs
-      .where('timestamp')
-      .below(thirtyDaysAgo)
-      .delete();
+    // 6. Prune old logs occasionally to avoid DB performance hit on every attempt (1% chance)
+    if (Math.random() < 0.01) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      await db.attemptLogs
+        .where('timestamp')
+        .below(thirtyDaysAgo)
+        .delete();
+    }
   };
 
   const getCard = async (factId: string): Promise<Card | null> => {
