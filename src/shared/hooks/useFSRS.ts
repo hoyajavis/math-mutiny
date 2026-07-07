@@ -110,5 +110,23 @@ export const useFSRS = () => {
     return Math.min(avgStability / 10, 1);
   };
 
-  return { recordAttempt, getCard, getAllCards, getGroupStability, isReady };
+  const getGroupStabilities = async (filters: Record<string, (factId: string) => boolean>): Promise<Record<string, number>> => {
+    if (!currentUser) return {};
+    const cards = await db.factStates.where('userId').equals(currentUser).toArray();
+
+    const result: Record<string, number> = {};
+    for (const [key, filterFn] of Object.entries(filters)) {
+      const matchingCards = cards.filter(c => filterFn(c.factId));
+      if (matchingCards.length === 0) {
+        result[key] = 0;
+      } else {
+        const totalStability = matchingCards.reduce((sum, state) => sum + state.card.stability, 0);
+        const avgStability = totalStability / matchingCards.length;
+        result[key] = Math.min(avgStability / 10, 1);
+      }
+    }
+    return result;
+  };
+
+  return { recordAttempt, getCard, getAllCards, getGroupStability, getGroupStabilities, isReady };
 };
