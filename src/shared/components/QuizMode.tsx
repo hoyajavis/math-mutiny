@@ -118,16 +118,20 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
     if (isGameOver || skillSelect === null) return;
     let timeout: ReturnType<typeof setTimeout>;
     
+    let lastReset = 0;
     const resetIdle = () => {
+      const now = Date.now();
+      if (now - lastReset < 1000) return;
+      lastReset = now;
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         setBotMessage(config.sarcasm.idle[Math.floor(Math.random() * config.sarcasm.idle.length)]);
       }, 30000);
     };
 
-    window.addEventListener('mousemove', resetIdle);
-    window.addEventListener('keydown', resetIdle);
-    window.addEventListener('click', resetIdle);
+    window.addEventListener('mousemove', resetIdle, { passive: true });
+    window.addEventListener('keydown', resetIdle, { passive: true });
+    window.addEventListener('click', resetIdle, { passive: true });
     resetIdle();
 
     return () => {
