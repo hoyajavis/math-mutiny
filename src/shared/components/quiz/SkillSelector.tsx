@@ -17,12 +17,18 @@ export const SkillSelector: React.FC<SkillSelectorProps> = ({ config, onSelect }
         const filters: Record<string, (factId: string) => boolean> = {};
         for (const skill of config.skills) {
           if (config.appId === 'multiplication') {
-            filters[skill.id] = id => id.endsWith('x' + skill.id) || id.startsWith(skill.id + 'x');
+            filters[skill.id] = id => {
+              const parts = id.split('x');
+              return parts[0] === skill.id.toString() || parts[1] === skill.id.toString();
+            };
           } else if (config.appId === 'division') {
-            filters[skill.id] = id => id.startsWith(skill.id + 'd');
+            filters[skill.id] = id => {
+              const parts = id.split('d');
+              return parts[0] === skill.id.toString();
+            };
           } else {
             // fractions
-            filters[skill.id] = id => id.includes(skill.id.toString());
+            filters[skill.id] = id => id.startsWith(skill.prefix);
           }
         }
         const newStabilities = await getGroupStabilities(filters);
