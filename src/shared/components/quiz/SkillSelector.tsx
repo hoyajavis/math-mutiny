@@ -19,7 +19,7 @@ export const SkillSelector: React.FC<SkillSelectorProps> = ({ config, onSelect }
           if (config.appId === 'multiplication') {
             filters[skill.id] = id => id.endsWith('x' + skill.id) || id.startsWith(skill.id + 'x');
           } else if (config.appId === 'division') {
-            filters[skill.id] = id => id.endsWith('÷' + skill.id);
+            filters[skill.id] = id => id.startsWith(skill.id + 'd');
           } else {
             // fractions
             filters[skill.id] = id => id.includes(skill.id.toString());
