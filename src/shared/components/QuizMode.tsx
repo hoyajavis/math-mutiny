@@ -344,7 +344,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
   const currentQ = questions[currentIndex];
 
   return (
-    <div className={`flex flex-col min-h-screen p-4 md:p-6 lg:p-4 transition-colors duration-300 ${mode === 'challenge' ? `bg-black text-white` : config.theme.primaryBg} ${isShaking ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
+    <div className={`flex flex-col h-[100dvh] overflow-hidden p-2 sm:p-4 md:p-6 lg:p-4 transition-colors duration-300 ${mode === 'challenge' ? `bg-black text-white` : config.theme.primaryBg} ${isShaking ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
       {zeroCeleb && (
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
           <motion.div
@@ -376,33 +376,33 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
         onAbort={() => setMode('home')}
       />
 
-      <div className="flex-1 flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto w-full gap-2 lg:gap-4">
+      <div className="flex-1 min-h-0 overflow-y-auto lg:overflow-visible flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto w-full gap-1 sm:gap-2 lg:gap-4 pb-2">
         
         {/* Math-Bot / Boss Coach Area */}
         {mode === 'challenge' && (
-          <div className="w-full lg:w-64 flex flex-col items-center shrink-0 mb-2 lg:mb-0 order-last lg:order-first mt-2 lg:mt-0">
+          <div className="w-full lg:w-64 flex flex-col items-center shrink-0 mb-1 lg:mb-0 order-last lg:order-first mt-1 lg:mt-0">
             <motion.div 
               key={botMessage}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-white text-black border-4 border-black p-3 md:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative mb-4 transform rotate-2 w-full max-w-sm"
+              className="bg-white text-black border-4 border-black p-2 md:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative mb-2 sm:mb-4 transform rotate-2 w-full max-w-sm"
             >
-              <p className="font-bold text-lg leading-tight text-center">{botMessage}</p>
+              <p className="font-bold text-sm sm:text-lg leading-tight text-center">{botMessage}</p>
               <div className="absolute -bottom-4 right-1/2 ml-2 w-4 h-4 bg-white border-r-4 border-b-4 border-black rotate-45"></div>
             </motion.div>
-            <div className={`text-6xl md:text-7xl animate-bounce drop-shadow-xl cursor-pointer select-none`} onClick={handleBotClick}>
+            <div className={`text-4xl sm:text-6xl md:text-7xl animate-bounce drop-shadow-xl cursor-pointer select-none`} onClick={handleBotClick}>
               🤖
             </div>
-            <div className="text-center font-black uppercase tracking-widest text-white bg-black px-3 py-1 mt-4 transform -rotate-1">
+            <div className="text-xs sm:text-base text-center font-black uppercase tracking-widest text-white bg-black px-2 sm:px-3 py-1 mt-1 sm:mt-4 transform -rotate-1">
               Math-Bot Coach
             </div>
           </div>
         )}
 
         {/* Quiz Area */}
-        <div className="flex-1 w-full flex flex-col items-center justify-center max-w-3xl">
+        <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center max-w-3xl">
           {mode !== 'challenge' && (
-            <div className={`text-2xl font-black mb-4 bg-black text-white px-4 py-1 border-4 border-black transform rotate-1`}>
+            <div className={`text-lg sm:text-2xl font-black mb-2 sm:mb-4 bg-black text-white px-2 sm:px-4 py-1 border-4 border-black transform rotate-1`}>
               QUESTION {currentIndex + 1}
             </div>
           )}
@@ -426,20 +426,20 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
         </div>
 
         {/* Boss Area / Bot Area */}
-        <div className="w-full lg:w-64 flex flex-col items-center shrink-0 mb-2 lg:mb-0 order-first lg:order-last">
+        <div className="w-full lg:w-64 flex flex-col items-center shrink-0 mb-1 sm:mb-2 lg:mb-0 order-first lg:order-last">
           <motion.div 
             key={mode === 'challenge' ? bossMessage : botMessage}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white text-black border-4 border-black p-3 md:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative mb-4 transform -rotate-2 w-full max-w-sm"
+            className="bg-white text-black border-4 border-black p-2 md:p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative mb-2 sm:mb-4 transform -rotate-2 w-full max-w-sm"
           >
-            <p className="font-bold text-lg leading-tight text-center">{mode === 'challenge' ? bossMessage : botMessage}</p>
+            <p className="font-bold text-sm sm:text-lg leading-tight text-center">{mode === 'challenge' ? bossMessage : botMessage}</p>
             <div className="absolute -bottom-4 left-1/2 -ml-2 w-4 h-4 bg-white border-r-4 border-b-4 border-black rotate-45"></div>
           </motion.div>
           
           {mode === 'challenge' ? (
             <div 
-              className={`text-6xl md:text-7xl animate-pulse drop-shadow-xl cursor-pointer select-none`} 
+              className={`text-4xl sm:text-6xl md:text-7xl animate-pulse drop-shadow-xl cursor-pointer select-none`}
               onClick={() => {
                 setBossMessage(currentBoss.taunts[Math.floor(Math.random() * currentBoss.taunts.length)]);
                 triggerEffect('explosion', window.innerWidth - 100, window.innerHeight - 100);
@@ -448,12 +448,12 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
               👹
             </div>
           ) : (
-            <div className={`text-6xl md:text-7xl animate-bounce drop-shadow-xl cursor-pointer select-none`} onClick={handleBotClick}>
+            <div className={`text-4xl sm:text-6xl md:text-7xl animate-bounce drop-shadow-xl cursor-pointer select-none`} onClick={handleBotClick}>
               🤖
             </div>
           )}
           <div 
-            className={`text-center font-black uppercase tracking-widest text-white px-3 py-1 mt-4 transform rotate-1 bg-black`}
+            className={`text-xs sm:text-base text-center font-black uppercase tracking-widest text-white px-2 sm:px-3 py-1 mt-1 sm:mt-4 transform rotate-1 bg-black`}
           >
             {mode === 'challenge' ? currentBoss.name : 'Math-Bot 9000'}
           </div>

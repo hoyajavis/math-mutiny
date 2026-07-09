@@ -33,8 +33,8 @@ export const Numpad: React.FC<NumpadProps> = ({ config, onKeyPress, onBackspace,
   const keys = isFraction ? fractionKeys : ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', 'ENTER'];
 
   return (
-    <div className={`mt-2 w-full max-w-sm ${isFraction ? 'max-w-md' : 'max-w-xs'}`}>
-      <div className={`grid ${isFraction ? 'grid-cols-4' : 'grid-cols-3'} gap-2`}>
+    <div className={`mt-1 sm:mt-2 w-full max-w-sm ${isFraction ? 'max-w-md' : 'max-w-xs'}`}>
+      <div className={`grid ${isFraction ? 'grid-cols-4' : 'grid-cols-3'} gap-1 sm:gap-2`}>
         {keys.map((btn) => (
           <button
             key={btn}
@@ -45,9 +45,9 @@ export const Numpad: React.FC<NumpadProps> = ({ config, onKeyPress, onBackspace,
               else if (btn === 'ENTER' && onSubmit) onSubmit();
               else if (btn !== 'ENTER') onKeyPress(btn);
             }}
-            className={`doodle-button font-black text-xl md:text-2xl py-2 flex items-center justify-center
-              ${btn === 'ENTER' ? `${config.theme.buttonBg} ${config.theme.primaryText} text-sm md:text-lg` : 
-                (btn === 'C' || btn === 'DEL') ? 'bg-red-500 text-white text-sm md:text-lg' : 
+            className={`doodle-button font-black text-lg sm:text-xl md:text-2xl py-1 sm:py-2 flex items-center justify-center
+              ${btn === 'ENTER' ? `${config.theme.buttonBg} ${config.theme.primaryText} text-xs sm:text-sm md:text-lg` :
+                (btn === 'C' || btn === 'DEL') ? 'bg-red-500 text-white text-xs sm:text-sm md:text-lg' :
                 (btn === '/' || btn === '.' || btn === ' ') ? `${config.theme.primaryBg} ${config.theme.primaryText}` :
                 'bg-white text-black'}
             `}
