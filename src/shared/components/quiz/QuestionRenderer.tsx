@@ -78,7 +78,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     <span className={`border-b-4 sm:border-b-8 border-black pb-0 sm:pb-1 px-1 sm:px-2 md:px-4 text-yellow-500 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]`}>{currentQ.b}</span>
                   </>
                 )}
-                <span className="text-4xl">=</span>
+                <span className="text-2xl sm:text-4xl">=</span>
               </>
             ) : currentQ?.type === 'arithmetic' ? (
               <>

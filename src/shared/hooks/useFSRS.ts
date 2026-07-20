@@ -76,13 +76,15 @@ export const useFSRS = () => {
       lastUpdate: timestamp
     });
 
-    // 6. Prune old logs (optional, e.g., older than 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    await db.attemptLogs
-      .where('timestamp')
-      .below(thirtyDaysAgo)
-      .delete();
+    // 6. Prune old logs occasionally to avoid DB performance hit on every attempt (1% chance)
+    if (Math.random() < 0.01) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      await db.attemptLogs
+        .where('timestamp')
+        .below(thirtyDaysAgo)
+        .delete();
+    }
   };
 
   const getCard = async (factId: string): Promise<Card | null> => {
@@ -110,5 +112,23 @@ export const useFSRS = () => {
     return Math.min(avgStability / 10, 1);
   };
 
-  return { recordAttempt, getCard, getAllCards, getGroupStability, isReady };
+  const getGroupStabilities = async (filters: Record<string, (factId: string) => boolean>): Promise<Record<string, number>> => {
+    if (!currentUser) return {};
+    const cards = await db.factStates.where('userId').equals(currentUser).toArray();
+
+    const result: Record<string, number> = {};
+    for (const [key, filterFn] of Object.entries(filters)) {
+      const matchingCards = cards.filter(c => filterFn(c.factId));
+      if (matchingCards.length === 0) {
+        result[key] = 0;
+      } else {
+        const totalStability = matchingCards.reduce((sum, state) => sum + state.card.stability, 0);
+        const avgStability = totalStability / matchingCards.length;
+        result[key] = Math.min(avgStability / 10, 1);
+      }
+    }
+    return result;
+  };
+
+  return { recordAttempt, getCard, getAllCards, getGroupStability, getGroupStabilities, isReady };
 };

@@ -29,7 +29,7 @@ export interface AppConfig {
   tips: { id: string | number; title: string; text: string; visual: string; graphic?: ReactNode }[];
   sarcasm: {
     idle: string[];
-    good: string[];
-    bad: string[];
+    correct: string[];
+    incorrect: string[];
   };
 }

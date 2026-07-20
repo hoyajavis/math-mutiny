@@ -122,16 +122,20 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
     if (isGameOver || skillSelect === null) return;
     let timeout: ReturnType<typeof setTimeout>;
     
+    let lastReset = 0;
     const resetIdle = () => {
+      const now = Date.now();
+      if (now - lastReset < 1000) return;
+      lastReset = now;
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         setBotMessage(config.sarcasm.idle[Math.floor(Math.random() * config.sarcasm.idle.length)]);
       }, 30000);
     };
 
-    window.addEventListener('mousemove', resetIdle);
-    window.addEventListener('keydown', resetIdle);
-    window.addEventListener('click', resetIdle);
+    window.addEventListener('mousemove', resetIdle, { passive: true });
+    window.addEventListener('keydown', resetIdle, { passive: true });
+    window.addEventListener('click', resetIdle, { passive: true });
     resetIdle();
 
     return () => {
@@ -245,7 +249,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
         }
         setBotMessage("ZERO DESTROYS ALL! MWHAHAHA!");
       } else {
-        setBotMessage(customBotMessage || config.sarcasm.good[Math.floor(Math.random() * config.sarcasm.good.length)]);
+        setBotMessage(customBotMessage || config.sarcasm.correct[Math.floor(Math.random() * config.sarcasm.correct.length)]);
       }
 
       addScore(10 + Math.floor(combo / 5) * 5);
@@ -283,7 +287,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
             setIsTransitioning(false);
             setQuestionStartTime(Date.now());
           } else {
-            if (mode === 'sequential') {
+            if (mode === 'sequential' || mode === 'random') {
               setIsGameOver(true);
             } else {
               // Generate more questions
@@ -302,7 +306,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
 
     } else {
       playFailSound();
-      setBotMessage(config.sarcasm.bad[Math.floor(Math.random() * config.sarcasm.bad.length)]);
+      setBotMessage(config.sarcasm.incorrect[Math.floor(Math.random() * config.sarcasm.incorrect.length)]);
       resetStreak();
       resetCombo();
       setIsShaking(true);
@@ -389,7 +393,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
         onAbort={() => setMode('home')}
       />
 
-      <div className="flex-1 flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto w-full gap-2 lg:gap-4">
+      <div className="flex-1 min-h-0 overflow-y-auto lg:overflow-visible flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto w-full gap-1 sm:gap-2 lg:gap-4 pb-2">
         
         {/* Math-Bot / Boss Coach Area */}
         {mode === 'challenge' && (
@@ -415,7 +419,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ mode, setMode, config }) => 
         )}
 
         {/* Quiz Area */}
-        <div className="flex-1 w-full flex flex-col items-center justify-center max-w-3xl">
+        <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center max-w-3xl">
           {mode !== 'challenge' && (
             <div className={`text-sm sm:text-2xl font-black mb-1 sm:mb-4 bg-black text-white px-2 sm:px-4 py-0.5 sm:py-1 border-2 sm:border-4 border-black transform rotate-1`}>
               QUESTION {currentIndex + 1}

@@ -1,4 +1,4 @@
-export type EffectType = 'rocket' | 'laser' | 'explosion';
+export type EffectType = 'rocket' | 'laser' | 'explosion' | 'sparkle';
 export type EffectEvent = { id: string, type: EffectType, x: number, y: number };
 type EffectListener = (effect: EffectEvent) => void;
 

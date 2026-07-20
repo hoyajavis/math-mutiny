@@ -8,29 +8,35 @@ interface SkillSelectorProps {
 }
 
 export const SkillSelector: React.FC<SkillSelectorProps> = ({ config, onSelect }) => {
-  const { getGroupStability } = useFSRS();
+  const { getGroupStabilities } = useFSRS();
   const [skillStabilities, setSkillStabilities] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    if (getGroupStability) {
+    if (getGroupStabilities) {
       const loadStabilities = async () => {
-        const newStabilities: Record<string, number> = {};
+        const filters: Record<string, (factId: string) => boolean> = {};
         for (const skill of config.skills) {
-          // In actual app we might need a more precise FSRS match per skill, but for now we mimic the old logic.
           if (config.appId === 'multiplication') {
-            newStabilities[skill.id] = await getGroupStability(id => id.endsWith('x' + skill.id) || id.startsWith(skill.id + 'x'));
+            filters[skill.id] = id => {
+              const parts = id.split('x');
+              return parts[0] === skill.id.toString() || parts[1] === skill.id.toString();
+            };
           } else if (config.appId === 'division') {
-            newStabilities[skill.id] = await getGroupStability(id => id.endsWith('÷' + skill.id));
+            filters[skill.id] = id => {
+              const parts = id.split('d');
+              return parts[0] === skill.id.toString();
+            };
           } else {
             // fractions
-            newStabilities[skill.id] = await getGroupStability(id => id.includes(skill.id.toString()));
+            filters[skill.id] = id => id.startsWith(skill.prefix);
           }
         }
+        const newStabilities = await getGroupStabilities(filters);
         setSkillStabilities(newStabilities);
       };
       loadStabilities();
     }
-  }, [config.skills, config.appId, getGroupStability]);
+  }, [config.skills, config.appId, getGroupStabilities]);
 
   return (
     <div className={`flex flex-col min-h-screen p-6 md:p-12 items-center justify-center ${config.theme.primaryBg}`}>
