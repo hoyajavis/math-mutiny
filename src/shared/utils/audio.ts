@@ -199,3 +199,121 @@ export const playFailSound = () => {
   osc1.stop(t + 0.3);
   osc2.stop(t + 0.3);
 };
+
+// --- Boss Intro Cinematic Audio ---
+export const playBossIntroMusic = () => {
+  resumeAudio();
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+
+  // Helper: Distortion Curve for Rock Guitar
+  const makeDistortionCurve = (amount: number) => {
+    const k = amount;
+    const n_samples = 44100;
+    const curve = new Float32Array(n_samples);
+    const deg = Math.PI / 180;
+    for (let i = 0; i < n_samples; ++i) {
+      const x = (i * 2) / n_samples - 1;
+      curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+    }
+    return curve;
+  };
+
+  // 1. The Alarm Siren (0.0s to 1.0s)
+  const sirenOsc = audioCtx.createOscillator();
+  sirenOsc.type = 'sawtooth';
+  sirenOsc.frequency.setValueAtTime(400, t);
+  sirenOsc.frequency.linearRampToValueAtTime(800, t + 0.5);
+  sirenOsc.frequency.linearRampToValueAtTime(400, t + 1.0);
+  
+  const sirenGain = audioCtx.createGain();
+  sirenGain.gain.setValueAtTime(0, t);
+  sirenGain.gain.linearRampToValueAtTime(0.3, t + 0.1);
+  sirenGain.gain.setValueAtTime(0.3, t + 0.8);
+  sirenGain.gain.linearRampToValueAtTime(0, t + 1.0);
+  
+  sirenOsc.connect(sirenGain);
+  sirenGain.connect(audioCtx.destination);
+  sirenOsc.start(t);
+  sirenOsc.stop(t + 1.0);
+
+  // 2. The Stomp Explosion (1.0s)
+  const stompT = t + 1.0;
+  const bufferSize = audioCtx.sampleRate * 1.5;
+  const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) + (Math.random() * 2 - 1);
+  }
+  const noiseSource = audioCtx.createBufferSource();
+  noiseSource.buffer = noiseBuffer;
+  const noiseFilter = audioCtx.createBiquadFilter();
+  noiseFilter.type = 'lowpass';
+  noiseFilter.frequency.setValueAtTime(1500, stompT);
+  noiseFilter.frequency.exponentialRampToValueAtTime(50, stompT + 1.5);
+  const stompGain = audioCtx.createGain();
+  stompGain.gain.setValueAtTime(2.0, stompT);
+  stompGain.gain.exponentialRampToValueAtTime(0.01, stompT + 1.5);
+  noiseSource.connect(noiseFilter);
+  noiseFilter.connect(stompGain);
+  stompGain.connect(audioCtx.destination);
+  noiseSource.start(stompT);
+
+  const subOsc = audioCtx.createOscillator();
+  subOsc.type = 'sine';
+  subOsc.frequency.setValueAtTime(100, stompT);
+  subOsc.frequency.exponentialRampToValueAtTime(20, stompT + 1.0);
+  const subGain = audioCtx.createGain();
+  subGain.gain.setValueAtTime(2.0, stompT);
+  subGain.gain.exponentialRampToValueAtTime(0.01, stompT + 1.0);
+  subOsc.connect(subGain);
+  subGain.connect(audioCtx.destination);
+  subOsc.start(stompT);
+  subOsc.stop(stompT + 1.0);
+
+  // 3. Heavy Metal Power Chords (1.5s and 2.5s)
+  const playPowerChord = (time: number, rootFreq: number, duration: number) => {
+    if (!audioCtx) return;
+    const oscRoot = audioCtx.createOscillator();
+    const oscFifth = audioCtx.createOscillator();
+    const oscOctave = audioCtx.createOscillator();
+    
+    oscRoot.type = 'sawtooth';
+    oscFifth.type = 'sawtooth';
+    oscOctave.type = 'square';
+    
+    oscRoot.frequency.setValueAtTime(rootFreq, time);
+    oscFifth.frequency.setValueAtTime(rootFreq * 1.5, time); // Perfect fifth
+    oscOctave.frequency.setValueAtTime(rootFreq * 2.0, time); // Octave
+    
+    const distortion = audioCtx.createWaveShaper();
+    distortion.curve = makeDistortionCurve(400); // Heavy fuzz
+    distortion.oversample = '4x';
+    
+    const chordGain = audioCtx.createGain();
+    chordGain.gain.setValueAtTime(0, time);
+    chordGain.gain.linearRampToValueAtTime(0.2, time + 0.05); // Attack
+    chordGain.gain.setValueAtTime(0.2, time + duration - 0.2); // Sustain
+    chordGain.gain.linearRampToValueAtTime(0, time + duration); // Release
+    
+    oscRoot.connect(distortion);
+    oscFifth.connect(distortion);
+    oscOctave.connect(distortion);
+    
+    distortion.connect(chordGain);
+    chordGain.connect(audioCtx.destination);
+    
+    oscRoot.start(time);
+    oscFifth.start(time);
+    oscOctave.start(time);
+    
+    oscRoot.stop(time + duration);
+    oscFifth.stop(time + duration);
+    oscOctave.stop(time + duration);
+  };
+
+  // E2 power chord at 1.5s
+  playPowerChord(t + 1.5, 82.41, 1.0); 
+  // G2 power chord at 2.5s (dissonant step up)
+  playPowerChord(t + 2.5, 98.00, 2.0);
+};

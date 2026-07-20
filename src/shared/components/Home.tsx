@@ -227,7 +227,7 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-4 md:p-6 overflow-x-hidden overflow-y-auto w-full relative">
+    <div className="flex flex-col min-h-screen p-2 sm:p-4 md:p-6 overflow-x-hidden overflow-y-auto w-full relative">
       <motion.button
         animate={{ x: runawayPos.x, y: runawayPos.y }}
         transition={{ type: "spring", stiffness: 400, damping: 15 }}
@@ -261,9 +261,9 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
           🚀
         </motion.div>
       )}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 gap-4 w-full">
-        <div className="flex flex-col items-start gap-4">
-          <a href="/math-mutiny/index.html" className="doodle-button px-2 py-1 md:px-4 md:py-2 text-sm md:text-lg font-black uppercase text-black bg-white">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 sm:mb-8 md:mb-12 gap-2 sm:gap-4 w-full">
+        <div className="flex flex-col items-start gap-2 sm:gap-4">
+          <a href="/math-mutiny/index.html" className="doodle-button px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-lg font-black uppercase text-black bg-white">
             ← Back to Hub
           </a>
           <div className="relative z-50">
@@ -279,7 +279,7 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
                 setTimeout(() => setTitleState('idle'), 5000);
               }
             }}
-            className="text-4xl md:text-6xl lg:text-7xl font-black text-black uppercase tracking-tighter cursor-pointer select-none relative z-50 inline-block"
+            className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-black uppercase tracking-tighter cursor-pointer select-none relative z-50 inline-block"
             style={{ 
               textShadow: '4px 4px 0px #fff, 8px 8px 0px #000',
               transform: titleState === 'dropped' ? 'translateY(100vh) rotate(180deg)' : titleState === 'returning' ? 'translateY(0) rotate(360deg)' : 'rotate(-2deg)',
@@ -307,7 +307,7 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
           </motion.div>
           </div>
         </div>
-        <div className="flex flex-row flex-wrap gap-2 md:gap-4 items-start mt-2 md:mt-0">
+        <div className="flex flex-row flex-wrap gap-2 md:gap-4 items-start mt-1 sm:mt-0">
           <div className="flex flex-col items-center sm:items-start gap-1">
             <div className="bg-black text-white px-2 py-1 sm:px-4 sm:py-2 border-2 sm:border-4 border-white -rotate-2 transform text-center sm:text-left w-full">
               <p className="text-[10px] sm:text-xs font-bold text-[#ffea00] uppercase tracking-widest">AGENT</p>
@@ -340,24 +340,24 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
 
       <div className="flex-1 flex items-center justify-center w-full max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
-          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="lg:col-span-8 grid grid-cols-2 gap-2 sm:gap-8">
             <button 
               onClick={() => setMode('sequential')}
-              className="group relative bg-white border-4 border-black p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
+              className="group relative bg-white border-4 border-black p-2 sm:p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
             >
-              <div className="absolute -top-3 -left-3 bg-[#00ff00] border-2 border-black px-2 text-sm font-bold text-black">01</div>
-              <h2 className="text-3xl font-black mb-2 uppercase text-black">Sequential</h2>
-              <p className="text-sm leading-tight text-black">{getSequentialDesc()}</p>
-              <div className="text-4xl self-end mt-4">🪜</div>
+              <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 bg-[#00ff00] border-2 border-black px-1 sm:px-2 text-[10px] sm:text-sm font-bold text-black">01</div>
+              <h2 className="text-sm xs:text-base sm:text-3xl font-black mb-1 sm:mb-2 uppercase text-black">Sequential</h2>
+              <p className="text-[9px] xs:text-[10px] sm:text-sm leading-tight hidden xs:block text-black">{getSequentialDesc()}</p>
+              <div className="text-xl sm:text-4xl self-end mt-1 sm:mt-4">🪜</div>
             </button>
 
             <button 
               onClick={() => setMode('random')}
-              className="group relative bg-white border-4 border-black p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
+              className="group relative bg-white border-4 border-black p-2 sm:p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
             >
-              <div className="absolute -top-3 -left-3 bg-[#00ffff] border-2 border-black px-2 text-sm font-bold text-black z-10">02</div>
+              <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 bg-[#00ffff] border-2 border-black px-1 sm:px-2 text-[10px] sm:text-sm font-bold text-black z-10">02</div>
               {randomHighScore > 0 && (
-                <div className="absolute -top-4 -right-3 bg-[#ffea00] border-2 border-black px-2 py-1 text-xs font-black transform rotate-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase z-10">
+                <div className="absolute -top-3 -right-2 sm:-top-4 sm:-right-3 bg-[#ffea00] border-2 border-black px-1 sm:px-2 py-0.5 sm:py-1 text-[8px] sm:text-xs font-black transform rotate-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase z-10">
                   BEST: {randomHighScore} XP
                 </div>
               )}
@@ -377,34 +377,34 @@ export const Home: React.FC<HomeProps> = ({ setMode, config }) => {
                 ))}
               </div>
 
-              <h2 className={`text-3xl font-black mb-2 uppercase ${config.theme.primaryText} relative z-10`}>Random</h2>
-              <p className={`text-sm leading-tight ${config.theme.primaryText} relative z-10`}>Total chaos! Can you keep up with the madness?</p>
-              <div className="text-4xl self-end mt-4 text-[#ff0000] animate-pulse relative z-10">💥</div>
+              <h2 className={`text-sm xs:text-base sm:text-3xl font-black mb-1 sm:mb-2 uppercase ${config.theme.primaryText} relative z-10`}>Random</h2>
+              <p className={`text-[9px] xs:text-[10px] sm:text-sm leading-tight hidden xs:block ${config.theme.primaryText} relative z-10`}>Total chaos! Can you keep up with the madness?</p>
+              <div className="text-xl sm:text-4xl self-end mt-1 sm:mt-4 text-[#ff0000] animate-pulse relative z-10">💥</div>
             </button>
 
             <button 
               onClick={() => setMode('challenge')}
-              className="group relative bg-[#000] border-4 border-black p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
+              className="group relative bg-[#000] border-4 border-black p-2 sm:p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
             >
-              <div className="absolute -top-3 -left-3 bg-[#ff0000] border-2 border-white text-white px-2 text-sm font-bold">BOSS</div>
+              <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 bg-[#ff0000] border-2 border-white text-white px-1 sm:px-2 text-[10px] sm:text-sm font-bold">BOSS</div>
               {challengeHighScore > 0 && (
-                <div className="absolute -top-4 -right-3 bg-[#00ffff] border-2 border-black px-2 py-1 text-xs font-black transform -rotate-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black uppercase">
+                <div className="absolute -top-3 -right-2 sm:-top-4 sm:-right-3 bg-[#00ffff] border-2 border-black px-1 sm:px-2 py-0.5 sm:py-1 text-[8px] sm:text-xs font-black transform -rotate-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black uppercase">
                   BEST: {challengeHighScore}s LEFT
                 </div>
               )}
-              <h2 className="text-3xl font-black mb-2 text-white italic uppercase">Boss Fight</h2>
-              <p className="text-sm leading-tight text-gray-300">{getBossDesc()}</p>
-              <div className="text-4xl self-end mt-4">👹</div>
+              <h2 className="text-sm xs:text-base sm:text-3xl font-black mb-1 sm:mb-2 text-white italic uppercase">Boss Fight</h2>
+              <p className="text-[9px] xs:text-[10px] sm:text-sm leading-tight hidden xs:block text-gray-300">{getBossDesc()}</p>
+              <div className="text-xl sm:text-4xl self-end mt-1 sm:mt-4">👹</div>
             </button>
 
             <button 
               onClick={() => setMode('learning')}
-              className="group relative bg-white border-4 border-black p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
+              className="group relative bg-white border-4 border-black p-2 sm:p-8 hover:translate-x-1 hover:-translate-y-1 transition-transform cursor-pointer shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col items-start justify-between text-left"
             >
-              <div className="absolute -top-3 -left-3 bg-[#ffff00] border-2 border-black px-2 text-sm font-bold text-black">TIPS</div>
-              <h2 className={`text-3xl font-black mb-2 uppercase ${config.theme.primaryText}`}>Brain Hacks</h2>
-              <p className={`text-sm leading-tight ${config.theme.primaryText}`}>{getTipsDesc()}</p>
-              <div className="text-4xl self-end mt-4">🧠</div>
+              <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 bg-[#ffff00] border-2 border-black px-1 sm:px-2 text-[10px] sm:text-sm font-bold text-black">TIPS</div>
+              <h2 className={`text-sm xs:text-base sm:text-3xl font-black mb-1 sm:mb-2 uppercase ${config.theme.primaryText}`}>Brain Hacks</h2>
+              <p className={`text-[9px] xs:text-[10px] sm:text-sm leading-tight hidden xs:block ${config.theme.primaryText}`}>{getTipsDesc()}</p>
+              <div className="text-xl sm:text-4xl self-end mt-1 sm:mt-4">🧠</div>
             </button>
           </div>
 
